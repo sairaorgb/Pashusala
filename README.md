@@ -1,4 +1,4 @@
-# pashusala
+# Pashusala
 
 A new Flutter project.
 
