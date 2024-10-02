@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:pashusala/utils/usertextfield.dart';
 
 class registerpage extends StatefulWidget {
   registerpage({super.key});
@@ -10,6 +11,15 @@ class registerpage extends StatefulWidget {
 }
 
 class _registerpageState extends State<registerpage> {
+  TextEditingController userName = TextEditingController();
+  TextEditingController userEmail = TextEditingController();
+  TextEditingController userPhone = TextEditingController();
+  TextEditingController userPassword = TextEditingController();
+  TextEditingController doctorName = TextEditingController();
+  TextEditingController doctorkvsc = TextEditingController();
+  TextEditingController doctorEmail = TextEditingController();
+  TextEditingController doctorPhone = TextEditingController();
+  TextEditingController doctorPassword = TextEditingController();
   @override
   Widget build(BuildContext context) {
     bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
@@ -60,244 +70,87 @@ class _registerpageState extends State<registerpage> {
                   ),
                   switchValue
                       ? Column(children: [
-                          Container(
-                              height: 48,
-                              width: 350,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                color: Color.fromRGBO(198, 244, 209, 1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18.0, vertical: 12.0),
-                                child: TextField(
-                                    decoration: InputDecoration(
-                                        icon: Icon(
-                                          Icons.person,
-                                          color: Colors.green[900],
-                                        ),
-                                        hintText: "Full Name",
-                                        hintStyle: TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.green[900]),
-                                        enabledBorder: InputBorder.none)),
-                              )),
+                          userTextfield(
+                              fieldName: "Full Name",
+                              myController: doctorName,
+                              fieldIcon: Icons.person,
+                              fieldColor: Colors.green[900],
+                              containerColor: Color.fromRGBO(198, 244, 209, 1)),
                           SizedBox(
                             height: 12,
                           ),
-                          Container(
-                              height: 48,
-                              width: 350,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                color: Color.fromRGBO(198, 244, 209, 1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18.0, vertical: 12.0),
-                                child: TextField(
-                                    decoration: InputDecoration(
-                                        icon: Icon(
-                                          Icons.password,
-                                          color: Colors.green[900],
-                                        ),
-                                        hintText: "KSVC Number",
-                                        hintStyle: TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.green[900]),
-                                        enabledBorder: InputBorder.none)),
-                              )),
+                          userTextfield(
+                              fieldName: "KSVC Number",
+                              myController: doctorkvsc,
+                              fieldIcon: Icons.password,
+                              fieldColor: Colors.green[900],
+                              containerColor: Color.fromRGBO(198, 244, 209, 1)),
                           SizedBox(
                             height: 12,
                           ),
-                          Container(
-                              height: 48,
-                              width: 350,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                color: Color.fromRGBO(198, 244, 209, 1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18.0, vertical: 12.0),
-                                child: TextField(
-                                    decoration: InputDecoration(
-                                        icon: Icon(
-                                          Icons.email,
-                                          color: Colors.green[900],
-                                        ),
-                                        hintText: "Email ID",
-                                        hintStyle: TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.green[900]),
-                                        enabledBorder: InputBorder.none)),
-                              )),
+                          userTextfield(
+                              fieldName: "Email ID",
+                              myController: doctorEmail,
+                              fieldIcon: Icons.email,
+                              fieldColor: Colors.green[900],
+                              containerColor: Color.fromRGBO(198, 244, 209, 1)),
                           SizedBox(
                             height: 12,
                           ),
-                          Container(
-                              height: 48,
-                              width: 350,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                color: Color.fromRGBO(198, 244, 209, 1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18.0, vertical: 12.0),
-                                child: TextField(
-                                    decoration: InputDecoration(
-                                        icon: Icon(
-                                          Icons.phone,
-                                          color: Colors.green[900],
-                                        ),
-                                        hintText: "Phone Number",
-                                        hintStyle: TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.green[900]),
-                                        enabledBorder: InputBorder.none)),
-                              )),
+                          userTextfield(
+                              fieldName: "Phone Number",
+                              myController: doctorPhone,
+                              fieldIcon: Icons.phone,
+                              fieldColor: Colors.green[900],
+                              containerColor: Color.fromRGBO(198, 244, 209, 1)),
                           SizedBox(
                             height: 12,
                           ),
-                          Container(
-                              height: 48,
-                              width: 350,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                color: Color.fromRGBO(198, 244, 209, 1),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18.0, vertical: 12.0),
-                                child: TextField(
-                                    decoration: InputDecoration(
-                                        icon: Icon(
-                                          Icons.lock,
-                                          color: Colors.green[900],
-                                        ),
-                                        hintText: "Set Password",
-                                        hintStyle: TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.green[900]),
-                                        enabledBorder: InputBorder.none)),
-                              )),
+                          userTextfield(
+                              fieldName: "Set Password",
+                              myController: doctorPassword,
+                              fieldIcon: Icons.lock,
+                              fieldColor: Colors.green[900],
+                              containerColor: Color.fromRGBO(198, 244, 209, 1)),
                           SizedBox(
-                            height: 30,
-                          )
+                            height: 12,
+                          ),
                         ])
                       : Column(
                           children: [
-                            Container(
-                                height: 48,
-                                width: 350,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)),
-                                  // color: Color.fromRGBO(198, 244, 209, 1),
-                                  color: Colors.blue[100],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18.0, vertical: 12.0),
-                                  child: TextField(
-                                      decoration: InputDecoration(
-                                          icon: Icon(
-                                            Icons.person,
-                                            color: Colors.blue[900],
-                                          ),
-                                          hintText: "User Name",
-                                          hintStyle: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.blue[900]),
-                                          enabledBorder: InputBorder.none)),
-                                )),
+                            userTextfield(
+                                fieldName: "User Name",
+                                myController: userName,
+                                fieldIcon: Icons.person,
+                                fieldColor: Colors.blue[900],
+                                containerColor: Colors.blue[100]),
                             SizedBox(
                               height: 12,
                             ),
-                            Container(
-                                height: 48,
-                                width: 350,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)),
-                                  // color: Color.fromRGBO(198, 244, 209, 1),
-                                  color: Colors.blue[100],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18.0, vertical: 12.0),
-                                  child: TextField(
-                                      decoration: InputDecoration(
-                                          icon: Icon(
-                                            Icons.email,
-                                            color: Colors.blue[900],
-                                          ),
-                                          hintText: "Email ID",
-                                          hintStyle: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.blue[900]),
-                                          enabledBorder: InputBorder.none)),
-                                )),
+                            userTextfield(
+                                fieldName: "Email ID",
+                                myController: userEmail,
+                                fieldIcon: Icons.email,
+                                fieldColor: Colors.blue[900],
+                                containerColor: Colors.blue[100]),
                             SizedBox(
                               height: 12,
                             ),
-                            Container(
-                                height: 48,
-                                width: 350,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)),
-                                  // color: Color.fromRGBO(198, 244, 209, 1),
-                                  color: Colors.blue[100],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18.0, vertical: 12.0),
-                                  child: TextField(
-                                      decoration: InputDecoration(
-                                          icon: Icon(
-                                            Icons.phone,
-                                            color: Colors.blue[900],
-                                          ),
-                                          hintText: "Phone number",
-                                          hintStyle: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.blue[900]),
-                                          enabledBorder: InputBorder.none)),
-                                )),
+                            userTextfield(
+                                fieldName: "Phone Number",
+                                myController: userPhone,
+                                fieldIcon: Icons.phone,
+                                fieldColor: Colors.blue[900],
+                                containerColor: Colors.blue[100]),
                             SizedBox(
                               height: 12,
                             ),
-                            Container(
-                                height: 48,
-                                width: 350,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8)),
-                                  // color: Color.fromRGBO(198, 244, 209, 1),
-                                  color: Colors.blue[100],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18.0, vertical: 12.0),
-                                  child: TextField(
-                                      decoration: InputDecoration(
-                                          icon: Icon(
-                                            Icons.lock,
-                                            color: Colors.blue[900],
-                                          ),
-                                          hintText: "Set Password",
-                                          hintStyle: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.blue[900]),
-                                          enabledBorder: InputBorder.none)),
-                                )),
+                            userTextfield(
+                                fieldName: "Set Password",
+                                myController: userPassword,
+                                fieldIcon: Icons.lock,
+                                fieldColor: Colors.blue[900],
+                                containerColor: Colors.blue[100]),
                             SizedBox(
                               height: 12,
                             ),

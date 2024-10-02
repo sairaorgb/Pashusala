@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:pashusala/utils/usertextfield.dart';
 
 class loginpage extends StatefulWidget {
   const loginpage({super.key});
@@ -11,6 +12,8 @@ class loginpage extends StatefulWidget {
 
 class _loginpageState extends State<loginpage> {
   bool _switchValue = false;
+  TextEditingController userName = TextEditingController();
+  TextEditingController password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -77,68 +80,28 @@ class _loginpageState extends State<loginpage> {
                   SizedBox(
                     height: 38,
                   ),
-                  Container(
-                      height: 48,
-                      width: 350,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        // color: Color.fromRGBO(198, 244, 209, 1),
-                        color: _switchValue
-                            ? Color.fromRGBO(198, 244, 209, 1)
-                            : Colors.blue[100],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18.0, vertical: 12.0),
-                        child: TextField(
-                            decoration: InputDecoration(
-                                icon: Icon(
-                                  Icons.person,
-                                  color: _switchValue
-                                      ? Colors.green[900]
-                                      : Colors.blue[900],
-                                ),
-                                hintText: "User Name",
-                                hintStyle: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    color: _switchValue
-                                        ? Colors.green[900]
-                                        : Colors.blue[900]),
-                                enabledBorder: InputBorder.none)),
-                      )),
+                  userTextfield(
+                    fieldName: "Username",
+                    myController: userName,
+                    fieldIcon: Icons.person,
+                    fieldColor: Colors.blue[900],
+                    containerColor: _switchValue
+                        ? Color.fromRGBO(198, 244, 209, 1)
+                        : Colors.blue[100],
+                  ),
                   SizedBox(
                     height: 12,
                   ),
-                  Container(
-                      height: 48,
-                      width: 350,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                        color: _switchValue
-                            ? Color.fromRGBO(198, 244, 209, 1)
-                            : Colors.blue[100],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18.0, vertical: 12.0),
-                        child: TextField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                                icon: Icon(
-                                  Icons.lock,
-                                  color: _switchValue
-                                      ? Colors.green[900]
-                                      : Colors.blue[900],
-                                ),
-                                hintText: "Password",
-                                hintStyle: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    color: _switchValue
-                                        ? Colors.green[900]
-                                        : Colors.blue[900]),
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none)),
-                      )),
+                  userTextfield(
+                    fieldName: "Password",
+                    myController: password,
+                    fieldIcon: Icons.lock,
+                    fieldColor: Colors.blue[900],
+                    containerColor: _switchValue
+                        ? Color.fromRGBO(198, 244, 209, 1)
+                        : Colors.blue[100],
+                    obscureText: true,
+                  ),
                   SizedBox(
                     height: 10,
                   ),
