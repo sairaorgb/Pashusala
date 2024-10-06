@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:pashusala/utils/usertextfield.dart';
+import 'package:veterinary/utils/usertextfield.dart';
 
 class loginpage extends StatefulWidget {
   const loginpage({super.key});
