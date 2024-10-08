@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:veterinary/utils/usertextfield.dart';
+import 'package:veterinary_app/utils/usertextfield.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class registerpage extends StatefulWidget {
   registerpage({super.key});
@@ -20,10 +22,72 @@ class _registerpageState extends State<registerpage> {
   TextEditingController doctorEmail = TextEditingController();
   TextEditingController doctorPhone = TextEditingController();
   TextEditingController doctorPassword = TextEditingController();
+
+  Future<String> authenticateDoctor(String doctorname, String doctoremail,
+      String doctorkvsc, String doctorphone, String doctorpassword) async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+              email: doctoremail, password: doctorpassword);
+      if (credential.user != null) {
+        var user = credential.user!;
+        await FirebaseFirestore.instance
+            .collection('doctors_data')
+            .doc(user.uid)
+            .set({
+          'doctorName': doctorname,
+          'doctorEmail': doctoremail,
+          'doctorPhone': doctorphone,
+          'doctorKVSC': doctorkvsc
+        });
+        return ("success");
+      } else {
+        return ("Cloud is Down. Please Try again");
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        return ('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        return ('The account already exists for that email.');
+      } else {
+        return ('$e');
+      }
+    }
+  }
+
+  Future<String> authenticateUser(String username, String useremail,
+      String userphone, String password) async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: useremail, password: password);
+      if (credential.user != null) {
+        var user = credential.user!;
+        await FirebaseFirestore.instance
+            .collection('users_data')
+            .doc(user.uid)
+            .set({
+          'userName': username,
+          'userEmail': useremail,
+          'userPhone': userphone
+        });
+        return ("success");
+      } else {
+        return ("Cloud is Down. Please Try again");
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        return ('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        return ('The account already exists for that email.');
+      } else {
+        return ('$e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
-    print(switchValue);
     return Scaffold(
       body: Stack(
         children: [
@@ -159,22 +223,118 @@ class _registerpageState extends State<registerpage> {
                   SizedBox(
                     height: 30,
                   ),
-                  Container(
-                    height: 48,
-                    width: 350,
-                    decoration: BoxDecoration(
-                        color:
-                            switchValue ? Colors.green[900] : Colors.blue[900],
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Text(
-                          "Register",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24),
+                  GestureDetector(
+                    onTap: () async {
+                      if (switchValue) {
+                        if (doctorName.text == '' ||
+                            doctorEmail.text == '' ||
+                            doctorkvsc.text == '' ||
+                            doctorPhone.text == '' ||
+                            doctorPassword.text == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Fill the Details completely !!',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                            ),
+                          );
+                        } else {
+                          var futresult = authenticateDoctor(
+                              doctorName.text,
+                              doctorEmail.text,
+                              doctorkvsc.text,
+                              doctorPhone.text,
+                              doctorPassword.text);
+                          var result = await futresult;
+                          print(result);
+                          if (result == 'success') {
+                            doctorName.clear();
+                            doctorEmail.clear();
+                            doctorPhone.clear();
+                            doctorPassword.clear();
+                            doctorkvsc.clear();
+                            Navigator.pushNamed(context, '/homepage',
+                                arguments: switchValue);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  result!,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.white,
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        if (userName.text == '' ||
+                            userEmail.text == '' ||
+                            userPhone.text == '' ||
+                            userPassword.text == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Fill the Details completely !!',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                            ),
+                          );
+                        } else {
+                          var futuserresult = authenticateUser(
+                              userName.text,
+                              userEmail.text,
+                              userPhone.text,
+                              userPassword.text);
+                          var result = await futuserresult;
+
+                          if (result == 'success') {
+                            userName.clear();
+                            userEmail.clear();
+                            userPhone.clear();
+                            userPassword.clear();
+                            Navigator.pushNamed(context, '/homepage',
+                                arguments: switchValue);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  result!,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.white,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                      ;
+                    },
+                    child: Container(
+                      height: 48,
+                      width: 350,
+                      decoration: BoxDecoration(
+                          color: switchValue
+                              ? Colors.green[900]
+                              : Colors.blue[900],
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            "Register",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24),
+                          ),
                         ),
                       ),
                     ),

@@ -1,7 +1,9 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:veterinary/utils/usertextfield.dart';
+import 'package:veterinary_app/utils/usertextfield.dart';
 
 class loginpage extends StatefulWidget {
   const loginpage({super.key});
@@ -14,6 +16,42 @@ class _loginpageState extends State<loginpage> {
   bool _switchValue = false;
   TextEditingController userName = TextEditingController();
   TextEditingController password = TextEditingController();
+
+  Future<String> authenticate(
+      String role, String useremail, String password) async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: useremail, password: password);
+      var userDoc;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (role == "doctor") {
+        userDoc = await FirebaseFirestore.instance
+            .collection('doctor')
+            .doc(currentUser!.uid)
+            .get();
+      } else {
+        userDoc = await FirebaseFirestore.instance
+            .collection('user')
+            .doc(currentUser!.uid)
+            .get();
+      }
+
+      if (userDoc.exists) {
+        final Data = userDoc.data();
+      }
+      return ('success');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        return ('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        return ('Wrong password provided for that user.');
+      } else {
+        return ('incorrect credentials');
+      }
+    } catch (e) {
+      return ('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +119,7 @@ class _loginpageState extends State<loginpage> {
                     height: 38,
                   ),
                   userTextfield(
-                    fieldName: "Username",
+                    fieldName: "User Email",
                     myController: userName,
                     fieldIcon: Icons.person,
                     fieldColor: Colors.blue[900],
@@ -118,22 +156,94 @@ class _loginpageState extends State<loginpage> {
                   SizedBox(
                     height: 70,
                   ),
-                  Container(
-                    height: 48,
-                    width: 350,
-                    decoration: BoxDecoration(
-                        color:
-                            _switchValue ? Colors.green[900] : Colors.blue[900],
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Text(
-                          "Login",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24),
+                  GestureDetector(
+                    onTap: () async {
+                      if (_switchValue) {
+                        if (userName.text == '' || password.text == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Fill the Details completely !!',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                            ),
+                          );
+                        } else {
+                          var result = await authenticate(
+                              "doctor", userName.text, password.text);
+                          if (result == 'success') {
+                            userName.clear();
+                            password.clear();
+                            Navigator.pushNamed(context, '/homepage',
+                                arguments: _switchValue);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  result!,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.white,
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        if (userName.text == '' || password.text == '') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Fill the Details completely !!',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                            ),
+                          );
+                        } else {
+                          var result = await authenticate(
+                              "user", userName.text, password.text);
+                          if (result == 'success') {
+                            userName.clear();
+                            password.clear();
+                            Navigator.pushNamed(context, '/homepage',
+                                arguments: _switchValue);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  result!,
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.white,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    child: Container(
+                      height: 48,
+                      width: 350,
+                      decoration: BoxDecoration(
+                          color: _switchValue
+                              ? Colors.green[900]
+                              : Colors.blue[900],
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            "Login",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24),
+                          ),
                         ),
                       ),
                     ),

@@ -2,8 +2,9 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:veterinary/pages/loginPage.dart';
-import 'package:veterinary/pages/registerPage.dart';
+import 'package:veterinary_app/pages/homepage.dart';
+import 'package:veterinary_app/pages/loginPage.dart';
+import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
 
 Future<void> main() async {
@@ -12,7 +13,8 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light));
-  // await Firebase.initializeApp();
+  await Firebase.initializeApp();
+
   runApp(myApp());
 }
 
@@ -26,6 +28,7 @@ class myApp extends StatelessWidget {
       home: loginpage(),
       routes: {
         '/registerpage': (context) => registerpage(),
+        '/homepage': (context) => homePage()
       },
     );
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "237180151477",
+    "project_id": "veternary-cfcc8",
+    "storage_bucket": "veternary-cfcc8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237180151477:android:28771a8cc9a9b4d93ac0fc",
+        "android_client_info": {
+          "package_name": "com.example.veterinary_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnz1zmXQQtw3xGjRD59WT_2h2Jw-W1Lok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
