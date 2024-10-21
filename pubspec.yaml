@@ -40,7 +40,7 @@ dependencies:
   cloud_firestore: ^5.4.4
   firebase_database: ^11.1.4
   google_nav_bar: ^5.0.6
-  hive: 
+  animated_text_kit: ^4.2.2 
 
 dev_dependencies:
   flutter_test:

@@ -13,7 +13,6 @@ class loginpage extends StatefulWidget {
 }
 
 class _loginpageState extends State<loginpage> {
-  bool _switchValue = false;
   TextEditingController userName = TextEditingController();
   TextEditingController password = TextEditingController();
 
@@ -55,6 +54,8 @@ class _loginpageState extends State<loginpage> {
 
   @override
   Widget build(BuildContext context) {
+    bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
+    var _switchValue = switchValue;
     return Scaffold(
       body: Stack(
         children: [
@@ -94,6 +95,7 @@ class _loginpageState extends State<loginpage> {
                           onChanged: (value) {
                             setState(() {
                               _switchValue = value;
+                              print(_switchValue);
                             });
                           },
                           activeColor: Colors.green,
