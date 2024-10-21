@@ -6,6 +6,7 @@ import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
+import 'package:veterinary_app/pages/welcomepage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class myApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: loginpage(),
+      home: welcomePage(),
       routes: {
         '/registerpage': (context) => registerpage(),
         '/homepage': (context) => homePage()
