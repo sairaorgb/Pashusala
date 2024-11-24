@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 
 class loginpage extends StatefulWidget {
-  const loginpage({super.key});
-
+  bool switchbool;
+  loginpage({super.key, required this.switchbool});
   @override
   State<loginpage> createState() => _loginpageState();
 }
@@ -15,6 +15,12 @@ class loginpage extends StatefulWidget {
 class _loginpageState extends State<loginpage> {
   TextEditingController userName = TextEditingController();
   TextEditingController password = TextEditingController();
+  late bool _switchValue;
+  late String currentUserId;
+  void initState() {
+    super.initState();
+    _switchValue = widget.switchbool;
+  }
 
   Future<String> authenticate(
       String role, String useremail, String password) async {
@@ -34,7 +40,7 @@ class _loginpageState extends State<loginpage> {
             .doc(currentUser!.uid)
             .get();
       }
-
+      currentUserId = currentUser.uid;
       if (userDoc.exists) {
         final Data = userDoc.data();
       }
@@ -54,8 +60,9 @@ class _loginpageState extends State<loginpage> {
 
   @override
   Widget build(BuildContext context) {
-    bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
-    var _switchValue = switchValue;
+    // bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
+    // var _switchValue = false;
+    // var _switchValue = switchValue;
     return Scaffold(
       body: Stack(
         children: [
@@ -94,6 +101,7 @@ class _loginpageState extends State<loginpage> {
                           value: _switchValue,
                           onChanged: (value) {
                             setState(() {
+                              print(_switchValue);
                               _switchValue = value;
                               print(_switchValue);
                             });
@@ -178,8 +186,14 @@ class _loginpageState extends State<loginpage> {
                           if (result == 'success') {
                             userName.clear();
                             password.clear();
-                            Navigator.pushNamed(context, '/homepage',
-                                arguments: _switchValue);
+                            Navigator.pushNamed(
+                              context,
+                              '/homepage',
+                              arguments: <String, String>{
+                                'switchValue': _switchValue.toString(),
+                                'userId': currentUserId,
+                              },
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -211,8 +225,14 @@ class _loginpageState extends State<loginpage> {
                           if (result == 'success') {
                             userName.clear();
                             password.clear();
-                            Navigator.pushNamed(context, '/homepage',
-                                arguments: _switchValue);
+                            Navigator.pushNamed(
+                              context,
+                              '/homepage',
+                              arguments: <String, String>{
+                                'switchValue': _switchValue.toString(),
+                                'userId': currentUserId,
+                              },
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

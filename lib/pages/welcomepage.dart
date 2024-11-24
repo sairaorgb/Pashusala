@@ -2,6 +2,7 @@
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/pages/loginPage.dart';
 
 class welcomePage extends StatefulWidget {
   const welcomePage({super.key});
@@ -85,8 +86,10 @@ class _welcomePageState extends State<welcomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/loginpage',
-                      arguments: false),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => loginpage(switchbool: false))),
                   child: Container(
                     height: 36,
                     width: 140,
@@ -110,8 +113,11 @@ class _welcomePageState extends State<welcomePage> {
                   width: 100,
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/loginpage',
-                      arguments: true),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => loginpage(switchbool: true),
+                      )),
                   child: Container(
                     height: 36,
                     width: 100,
