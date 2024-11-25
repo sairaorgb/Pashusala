@@ -32,7 +32,8 @@ class _storePageState extends State<storePage> {
       final fetchedPets = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return {
-          'name': data['petType'] ?? 'Unknown',
+          'name': data['name'] ?? 'Unknown',
+          'animalType': data['animalType'] ?? 'Unknown',
           'breed': data['breed'] ?? 'UnKnown',
           'age': data['age'] ?? 0,
           'height': data['height'] ?? 0.0,
@@ -66,10 +67,8 @@ class _storePageState extends State<storePage> {
           ],
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 25),
-        child: Text("Everyone flies... some fly longer than others",
-            style: TextStyle(color: Colors.grey[600])),
+      SizedBox(
+        height: 20,
       ),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25),
@@ -91,24 +90,28 @@ class _storePageState extends State<storePage> {
         ),
       ),
       const SizedBox(
-        height: 10,
+        height: 40,
       ),
-      Expanded(
-          child: ListView.builder(
-              itemCount: petList.length,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                final pet = petList[index];
-                return petTile(
-                  breed: pet['breed'],
-                  animalType: pet['name'],
-                  age: pet['age'],
-                  height: pet['height'],
-                  weight: pet['weight'],
-                  CurrentUserId: widget.currentUserId,
-                  PetId: pet['petId'],
-                );
-              })),
+      SizedBox(
+        height: 450,
+        child: Expanded(
+            child: ListView.builder(
+                itemCount: petList.length,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final pet = petList[index];
+                  return petTile(
+                    name: pet['name'],
+                    breed: pet['breed'],
+                    animalType: pet['animalType'],
+                    age: pet['age'],
+                    height: pet['height'],
+                    weight: pet['weight'],
+                    CurrentUserId: widget.currentUserId,
+                    PetId: pet['petId'],
+                  );
+                })),
+      ),
     ]);
   }
 }

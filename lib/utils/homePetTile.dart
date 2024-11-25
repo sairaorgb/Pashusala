@@ -2,10 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/utils/imageProvider.dart';
 
 class homePageTile extends StatefulWidget {
   final String name;
-  final String imagePath;
+
   final int age;
   final double height;
   final double weight;
@@ -18,7 +19,6 @@ class homePageTile extends StatefulWidget {
       {super.key,
       required this.name,
       required this.animalType,
-      required this.imagePath,
       required this.age,
       required this.height,
       required this.weight,
@@ -44,7 +44,8 @@ class _homePageTileState extends State<homePageTile> {
 
       // Adding data
       await pets.add({
-        'petType': widget.animalType,
+        'name': widget.name,
+        'animalType': widget.animalType,
         'breed': widget.breed,
         'age': widget.age,
         'height': widget.height,
@@ -71,48 +72,178 @@ class _homePageTileState extends State<homePageTile> {
   Widget build(BuildContext context) {
     var status = (statusState == "") ? widget.status : statusState;
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
-          ListTile(
-            leading: Image.asset(
-              widget.imagePath,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-            ),
-            title: Text(widget.name,
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            trailing: IconButton(
-              icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  isExpanded = !isExpanded;
-                });
-              },
-            ),
+          Row(
+            children: [
+              // Image section
+              Container(
+                margin: const EdgeInsets.all(16),
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  // Background color for image container
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    getImagePath(widget.animalType, widget.breed),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              // Details section
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            widget.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.male, // Gender icon
+                            size: 18,
+                            color: Colors.grey,
+                          ),
+                        ],
+                      ),
+                      Text(
+                        widget.animalType,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 14, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          // Text(
+                          //   '${widget.location} (${widget.distance})',
+                          //   style: TextStyle(
+                          //     fontSize: 12,
+                          //     color: Colors.grey,
+                          //   ),
+                          // ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Expand/Collapse Button
+              IconButton(
+                icon: Icon(
+                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isExpanded = !isExpanded;
+                  });
+                },
+              ),
+            ],
           ),
+          // Expanded Details Section
           if (isExpanded)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Age: ${widget.age} years'),
-                  Text('Height: ${widget.height} cm'),
-                  Text('Weight: ${widget.weight} kg'),
-                  ElevatedButton(
-                      onPressed: () async {
-                        status = await addPetToCart(
-                            userid: widget.currentUserId, petid: widget.petId);
-                      },
-                      child: Container(
-                        color: status == "ON SALE" ? Colors.green : Colors.red,
-                        child: Text(
-                          widget.status,
-                          style: TextStyle(color: Colors.white),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _infoBox("Age", "${widget.age}"),
+                      _infoBox("Height", "${widget.height}"),
+                      _infoBox("Breed", widget.breed),
+                      _infoBox("Weight", "${widget.weight}"),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  // Call, Chat, and Adopt Button row
+                  Row(
+                    children: [
+                      // Call icon button
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor: Colors.blue[50],
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            print("Call button pressed");
+                          },
+                          child: Icon(
+                            Icons.call,
+                            color: Colors.blue,
+                          ),
                         ),
-                      ))
+                      ),
+                      const SizedBox(width: 8),
+                      // Chat icon button
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor: Colors.blue[50],
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            print("Chat button pressed");
+                          },
+                          child: Icon(
+                            Icons.chat_bubble_outline,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                backgroundColor: status == "ON SALE"
+                                    ? Colors.red
+                                    : Colors.green,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              onPressed: () async {
+                                status = await addPetToCart(
+                                    userid: widget.currentUserId,
+                                    petid: widget.petId);
+                              },
+                              child: Container(
+                                child: Text(
+                                  status,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ))),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -120,4 +251,44 @@ class _homePageTileState extends State<homePageTile> {
       ),
     );
   }
+}
+
+Widget _infoBox(String title, String value) {
+  return Expanded(
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

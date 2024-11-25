@@ -19,6 +19,7 @@ class ShowPetInfoDialog extends StatelessWidget {
   Future<void> savePetDetailsToFirestore({
     required String petType,
     required String breed,
+    required String petName,
     required int age,
     required double height,
     required double weight,
@@ -33,12 +34,13 @@ class ShowPetInfoDialog extends StatelessWidget {
 
       // Adding data
       await pets.add({
-        'petType': petType,
+        'animalType': petType,
         'breed': breed,
+        'name': petName,
         'age': age,
         'height': height,
         'weight': weight,
-        'status': "Sell"
+        'status': "Put On Sale"
       });
 
       print('Pet details saved successfully!');
@@ -49,42 +51,42 @@ class ShowPetInfoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        // Show the dialog when the button is pressed
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Enter Pet Details'),
-              content: SingleChildScrollView(
-                child: Container(
-                  width: 400,
-                  child: _DialogContent(
-                    currentUserId: currentUserId,
-                    onPetAdded: onPetAdded,
-                    savePetDetailsToFirestore: savePetDetailsToFirestore,
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-      child: Container(
-        height: 30,
-        width: 140,
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(6)),
-        child: Center(
-          child: Text(
-            "Add Pet  +",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 22, color: Colors.blue),
+    //return //ElevatedButton(
+    //   onPressed: () {
+    //     // Show the dialog when the button is pressed
+    // showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    return AlertDialog(
+      title: Text('Enter Pet Details'),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: 400,
+          child: _DialogContent(
+            currentUserId: currentUserId,
+            onPetAdded: onPetAdded,
+            savePetDetailsToFirestore: savePetDetailsToFirestore,
           ),
         ),
       ),
     );
+    //   },
+    // );
+    //},
+    // child: Container(
+    //   height: 30,
+    //   width: 140,
+    //   decoration: BoxDecoration(
+    //       color: Colors.white, borderRadius: BorderRadius.circular(6)),
+    //   child: Center(
+    //     child: Text(
+    //       "Add Pet  +",
+    //       style: TextStyle(
+    //           fontWeight: FontWeight.bold, fontSize: 22, color: Colors.blue),
+    //     ),
+    //   ),
+    // ),
+    //);
   }
 }
 
@@ -94,6 +96,7 @@ class _DialogContent extends StatelessWidget {
   final Future<void> Function({
     required String petType,
     required String breed,
+    required String petName,
     required int age,
     required double height,
     required double weight,
@@ -110,12 +113,25 @@ class _DialogContent extends StatelessWidget {
   Widget build(BuildContext context) {
     String? selectedPetType;
     String? selectedBreed;
+    final TextEditingController namecontroller = TextEditingController();
     final TextEditingController ageController = TextEditingController();
     final TextEditingController heightController = TextEditingController();
     final TextEditingController weightController = TextEditingController();
 
-    final List<String> petTypes = ['Dog', 'Cat', 'Bird', 'Fish'];
-    final List<String> breeds = ['Labrador', 'Persian', 'Parrot', 'Goldfish'];
+    final List<String> petTypes = ['Cat', 'Dog', 'Fish'];
+    final List<String> breeds = [
+      'Ragdoll',
+      'Persian',
+      'Maine coon',
+      'Siberian',
+      'Bulldog',
+      'Golden Retriever',
+      'Husky',
+      'Pomenarian',
+      'Clown',
+      'Goldfish',
+      'Siamese'
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,6 +184,15 @@ class _DialogContent extends StatelessWidget {
         ),
         SizedBox(height: 16),
         TextField(
+          controller: namecontroller,
+          decoration: InputDecoration(
+            labelText: 'Pet Name',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.text,
+        ),
+        SizedBox(height: 16),
+        TextField(
           controller: ageController,
           decoration: InputDecoration(
             labelText: 'Age',
@@ -208,6 +233,7 @@ class _DialogContent extends StatelessWidget {
                 // Collect values from text fields and dropdowns
                 String petType = selectedPetType ?? '';
                 String breed = selectedBreed ?? '';
+                String petName = namecontroller.text ?? '';
                 int age = int.tryParse(ageController.text) ?? 0;
                 double height = double.tryParse(heightController.text) ?? 0.0;
                 double weight = double.tryParse(weightController.text) ?? 0.0;
@@ -216,6 +242,7 @@ class _DialogContent extends StatelessWidget {
                 await savePetDetailsToFirestore(
                   petType: petType,
                   breed: breed,
+                  petName: petName,
                   age: age,
                   height: height,
                   weight: weight,

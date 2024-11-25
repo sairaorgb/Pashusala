@@ -55,7 +55,7 @@ class _pageNavState extends State<pageNav> {
             ),
             SizedBox(
               child: Text(
-                "E-Veterinary",
+                "Pashushala",
                 style: TextStyle(
                     fontSize: 38,
                     color: Colors.white,
@@ -123,26 +123,27 @@ class _pageNavState extends State<pageNav> {
       ),
       body: pages[currentPageIndex],
       bottomNavigationBar: GNav(
-          backgroundColor: Colors.white,
+          backgroundColor:
+              (currentPageIndex != 1) ? Colors.blue.shade300 : Colors.white,
           activeColor: Colors.black,
           mainAxisAlignment: MainAxisAlignment.center,
           color: Colors.grey.shade500,
           tabBorderRadius: 16,
-          tabBackgroundColor: Colors.grey.shade200,
+          // tabBackgroundColor: Colors.grey.shade200,
           onTabChange: (index) => onTabchange(index),
           selectedIndex: currentPageIndex,
           tabs: [
             GButton(
               icon: Icons.shopping_cart,
-              text: "shop",
+              text: "Shop",
             ),
             GButton(
               icon: Icons.home,
-              text: "home",
+              text: "Home",
             ),
             GButton(
-              icon: Icons.menu,
-              text: "menu",
+              icon: Icons.favorite,
+              text: "Wishlist",
             )
           ]),
     );
