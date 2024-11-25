@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class homePageTile extends StatefulWidget {
@@ -8,14 +9,23 @@ class homePageTile extends StatefulWidget {
   final int age;
   final double height;
   final double weight;
-  const homePageTile({
-    super.key,
-    required this.name,
-    required this.imagePath,
-    required this.age,
-    required this.height,
-    required this.weight,
-  });
+  final String breed;
+  final String currentUserId;
+  final String petId;
+  final String status;
+  final String animalType;
+  const homePageTile(
+      {super.key,
+      required this.name,
+      required this.animalType,
+      required this.imagePath,
+      required this.age,
+      required this.height,
+      required this.weight,
+      required this.breed,
+      required this.currentUserId,
+      required this.status,
+      required this.petId});
 
   @override
   State<homePageTile> createState() => _homePageTileState();
@@ -23,8 +33,43 @@ class homePageTile extends StatefulWidget {
 
 class _homePageTileState extends State<homePageTile> {
   bool isExpanded = false;
+  String statusState = "";
+
+  Future<String> addPetToCart(
+      {required String userid, required String petid}) async {
+    try {
+      // Reference to your Firestore collection
+      CollectionReference pets =
+          FirebaseFirestore.instance.collection('petStore');
+
+      // Adding data
+      await pets.add({
+        'petType': widget.animalType,
+        'breed': widget.breed,
+        'age': widget.age,
+        'height': widget.height,
+        'weight': widget.weight,
+        'petId': widget.petId
+      });
+
+      FirebaseFirestore.instance
+          .collection('users_data')
+          .doc(userid)
+          .collection('petsOwned')
+          .doc(petid)
+          .update({'status': "ON SALE"});
+      setState(() {
+        statusState = "ON SALE";
+      });
+
+      return "ON SALE";
+    } catch (e) {
+      return e.toString();
+    }
+  }
 
   Widget build(BuildContext context) {
+    var status = (statusState == "") ? widget.status : statusState;
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
@@ -56,6 +101,18 @@ class _homePageTileState extends State<homePageTile> {
                   Text('Age: ${widget.age} years'),
                   Text('Height: ${widget.height} cm'),
                   Text('Weight: ${widget.weight} kg'),
+                  ElevatedButton(
+                      onPressed: () async {
+                        status = await addPetToCart(
+                            userid: widget.currentUserId, petid: widget.petId);
+                      },
+                      child: Container(
+                        color: status == "ON SALE" ? Colors.green : Colors.red,
+                        child: Text(
+                          widget.status,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ))
                 ],
               ),
             ),

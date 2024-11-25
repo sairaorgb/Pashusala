@@ -38,6 +38,7 @@ class ShowPetInfoDialog extends StatelessWidget {
         'age': age,
         'height': height,
         'weight': weight,
+        'status': "Sell"
       });
 
       print('Pet details saved successfully!');

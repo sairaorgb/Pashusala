@@ -40,9 +40,9 @@ class _registerpageState extends State<registerpage> {
           'doctorPhone': doctorphone,
           'doctorKVSC': doctorkvsc
         });
-        return ("success");
+        return (user.uid);
       } else {
-        return ("Cloud is Down. Please Try again");
+        return ("failure");
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -70,9 +70,9 @@ class _registerpageState extends State<registerpage> {
           'userEmail': useremail,
           'userPhone': userphone
         });
-        return ("success");
+        return (user.uid);
       } else {
-        return ("Cloud is Down. Please Try again");
+        return ("failure");
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -250,14 +250,20 @@ class _registerpageState extends State<registerpage> {
                               doctorPassword.text);
                           var result = await futresult;
                           print(result);
-                          if (result == 'success') {
+                          if (result != "failure") {
                             doctorName.clear();
                             doctorEmail.clear();
                             doctorPhone.clear();
                             doctorPassword.clear();
                             doctorkvsc.clear();
-                            Navigator.pushNamed(context, '/homepage',
-                                arguments: switchValue);
+                            Navigator.pushNamed(
+                              context,
+                              '/pagenavpage',
+                              arguments: <String, String>{
+                                'switchValue': switchValue.toString(),
+                                'userId': result,
+                              },
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -294,13 +300,19 @@ class _registerpageState extends State<registerpage> {
                               userPassword.text);
                           var result = await futuserresult;
 
-                          if (result == 'success') {
+                          if (result != "failure") {
                             userName.clear();
                             userEmail.clear();
                             userPhone.clear();
                             userPassword.clear();
-                            Navigator.pushNamed(context, '/homepage',
-                                arguments: switchValue);
+                            Navigator.pushNamed(
+                              context,
+                              '/pagenavpage',
+                              arguments: <String, String>{
+                                'switchValue': switchValue.toString(),
+                                'userId': result,
+                              },
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

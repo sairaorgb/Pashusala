@@ -19,7 +19,7 @@ class _welcomePageState extends State<welcomePage> {
       Container(
           child: Image.asset(
         'assets/images/entry.jpg',
-        fit: BoxFit.fill,
+        fit: BoxFit.cover,
       )),
       Padding(
         padding:

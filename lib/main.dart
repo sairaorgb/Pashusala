@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
+import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
 import 'package:veterinary_app/pages/welcomepage.dart';
@@ -28,8 +29,12 @@ class myApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: welcomePage(),
       routes: {
+        '/pagenavpage': (context) => pageNav(),
         '/registerpage': (context) => registerpage(),
-        '/homepage': (context) => homePage()
+        '/homepage': (context) => homePage(
+              switchValue: '',
+              currentUserId: '',
+            )
       },
     );
   }

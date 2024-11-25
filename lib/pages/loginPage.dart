@@ -188,7 +188,7 @@ class _loginpageState extends State<loginpage> {
                             password.clear();
                             Navigator.pushNamed(
                               context,
-                              '/homepage',
+                              '/pagenavpage',
                               arguments: <String, String>{
                                 'switchValue': _switchValue.toString(),
                                 'userId': currentUserId,
@@ -227,7 +227,7 @@ class _loginpageState extends State<loginpage> {
                             password.clear();
                             Navigator.pushNamed(
                               context,
-                              '/homepage',
+                              '/pagenavpage',
                               arguments: <String, String>{
                                 'switchValue': _switchValue.toString(),
                                 'userId': currentUserId,
