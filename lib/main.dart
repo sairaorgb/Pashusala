@@ -29,7 +29,12 @@ class myApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: welcomePage(),
       routes: {
-        '/pagenavpage': (context) => pageNav(),
+        '/loginpage': (context) => loginpage(switchbool: false),
+        '/pagenavpage': (context) => pageNav(
+              CurrentPageIndex: 1,
+              CurrentUserId: "",
+              SwitchValue: false,
+            ),
         '/registerpage': (context) => registerpage(),
         '/homepage': (context) => homePage(
               switchValue: '',

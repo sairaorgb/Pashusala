@@ -21,14 +21,17 @@ String getImagePath(String animalType, String breed) {
       'Siamese': 'assets/images/pets/fish/siamese.jpeg',
     },
   };
-
-  // Check if the animalType and breed exist in the map
-  if (animalImages.containsKey(animalType) &&
-      animalImages[animalType]!.containsKey(breed)) {
-    // return animalImages[animalType]![breed]!;
-    return 'assets/images/logo.png';
+  if (animalType != '' && breed != '') {
+    // Check if the animalType and breed exist in the map
+    if (animalImages.containsKey(animalType) &&
+        animalImages[animalType]!.containsKey(breed)) {
+      return animalImages[animalType]![breed]!;
+      // return 'assets/images/logo.png';
+    } else {
+      // Return a default image path if the type or breed is not found
+      return 'assets/images/logo.png';
+    }
   } else {
-    // Return a default image path if the type or breed is not found
     return 'assets/images/logo.png';
   }
 }

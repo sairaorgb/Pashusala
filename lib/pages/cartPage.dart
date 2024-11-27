@@ -6,7 +6,8 @@ import 'package:veterinary_app/utils/cartTile.dart';
 
 class cartPage extends StatefulWidget {
   final String UserId;
-  cartPage({super.key, required this.UserId});
+  final String switchValue;
+  cartPage({super.key, required this.UserId, required this.switchValue});
 
   @override
   State<cartPage> createState() => _cartPageState();
@@ -54,6 +55,10 @@ class _cartPageState extends State<cartPage> {
           'height': data['height'] ?? 0.0,
           'weight': data['weight'] ?? 0.0,
           'petId': data['petId'],
+          'petPrice': data['petPrice'] ?? '',
+          'ownerEmail': data['ownerEmail'],
+          'ownerId': data['ownerId'],
+          'ownerName': data['ownerName'],
         };
       }).toList();
 
@@ -138,12 +143,17 @@ class _cartPageState extends State<cartPage> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: cartTile(
+                              switchValue: widget.switchValue,
                               UserId: widget.UserId,
                               PetId: pet['petId'],
                               PetName: pet['name'],
                               animalType: pet['animalType'],
                               Price: pet['age'],
                               breed: pet['breed'],
+                              PetPrice: pet['petPrice'],
+                              ownerName: pet['ownerName'],
+                              ownerEmail: pet['ownerEmail'],
+                              ownerId: pet['ownerId'],
                               removeItemFromCart:
                                   (String userid, String petId) async {
                                 removeItemFromCart(widget.UserId, pet['petId']);

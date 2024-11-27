@@ -1,6 +1,7 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
@@ -36,22 +37,43 @@ class _homePageTileState extends State<homePageTile> {
   String statusState = "";
 
   Future<String> addPetToCart(
-      {required String userid, required String petid}) async {
+      {required String userid,
+      required String petid,
+      required String petprice}) async {
     try {
       // Reference to your Firestore collection
       CollectionReference pets =
           FirebaseFirestore.instance.collection('petStore');
-
-      // Adding data
-      await pets.add({
-        'name': widget.name,
-        'animalType': widget.animalType,
-        'breed': widget.breed,
-        'age': widget.age,
-        'height': widget.height,
-        'weight': widget.weight,
-        'petId': widget.petId
-      });
+      var snapshot = await pets.where('petId', isEqualTo: petid).get();
+      var userid = await FirebaseAuth.instance.currentUser?.uid;
+      var username = '';
+      var useremail = '';
+      var documentSnapshot = await FirebaseFirestore.instance
+          .collection('users_data')
+          .doc(userid)
+          .get();
+      if (documentSnapshot.exists) {
+        // Extract the username field
+        username = documentSnapshot.data()?['userName'] as String;
+        useremail = documentSnapshot.data()?['userEmail'] as String;
+      } else {
+        print('Document does not exist');
+      }
+      if (snapshot.docs.isEmpty) {
+        await pets.add({
+          'name': widget.name,
+          'animalType': widget.animalType,
+          'breed': widget.breed,
+          'age': widget.age,
+          'height': widget.height,
+          'weight': widget.weight,
+          'petId': widget.petId,
+          'petPrice': petprice,
+          'ownerId': userid,
+          'ownerName': username,
+          'ownerEmail': useremail
+        });
+      }
 
       FirebaseFirestore.instance
           .collection('users_data')
@@ -69,7 +91,29 @@ class _homePageTileState extends State<homePageTile> {
     }
   }
 
+  Future<String> removePetFromCart(
+      {required String petid, required String userid}) async {
+    CollectionReference pets =
+        FirebaseFirestore.instance.collection('petStore');
+    var snapshot = await pets.where('petId', isEqualTo: petid).get();
+    FirebaseFirestore.instance
+        .collection('users_data')
+        .doc(userid)
+        .collection('petsOwned')
+        .doc(petid)
+        .update({'status': "PUT ON SALE"});
+    for (QueryDocumentSnapshot doc in snapshot.docs) {
+      await pets.doc(doc.id).delete();
+    }
+
+    setState(() {
+      statusState = "PUT ON SALE";
+    });
+    return "PUT ON SALE";
+  }
+
   Widget build(BuildContext context) {
+    TextEditingController priceController = TextEditingController();
     var status = (statusState == "") ? widget.status : statusState;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -80,9 +124,9 @@ class _homePageTileState extends State<homePageTile> {
             children: [
               // Image section
               Container(
-                margin: const EdgeInsets.all(16),
-                width: 80,
-                height: 80,
+                margin: const EdgeInsets.all(10),
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   // Background color for image container
@@ -96,6 +140,9 @@ class _homePageTileState extends State<homePageTile> {
                 ),
               ),
               // Details section
+              SizedBox(
+                width: 10,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -232,9 +279,44 @@ class _homePageTileState extends State<homePageTile> {
                                     const EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () async {
-                                status = await addPetToCart(
-                                    userid: widget.currentUserId,
-                                    petid: widget.petId);
+                                if (status != "ON SALE") {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Set a Price for your pet'),
+                                        content: TextField(
+                                          controller: priceController,
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .pop(); // Close the dialog
+                                            },
+                                            child: Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () async {
+                                              status = await addPetToCart(
+                                                  userid: widget.currentUserId,
+                                                  petid: widget.petId,
+                                                  petprice:
+                                                      priceController.text);
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('Put for Sale'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  status = await removePetFromCart(
+                                      petid: widget.petId,
+                                      userid: widget.currentUserId);
+                                }
                               },
                               child: Container(
                                 child: Text(

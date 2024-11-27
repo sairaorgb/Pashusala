@@ -41,6 +41,7 @@ dependencies:
   firebase_database: ^11.1.4
   google_nav_bar: ^5.0.6
   animated_text_kit: ^4.2.2 
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -68,7 +69,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/
+    - assets/images/ 
+    - assets/images/pets/cat/
+    - assets/images/pets/dog/
+    - assets/images/pets/fish/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

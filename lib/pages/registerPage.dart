@@ -40,6 +40,15 @@ class _registerpageState extends State<registerpage> {
           'doctorPhone': doctorphone,
           'doctorKVSC': doctorkvsc
         });
+        await FirebaseFirestore.instance
+            .collection("chatUsers")
+            .doc(user.uid)
+            .set({
+          'uid': user.uid,
+          'name': doctorname,
+          'email': doctoremail,
+          'role': "doctor"
+        });
         return (user.uid);
       } else {
         return ("failure");
@@ -69,6 +78,15 @@ class _registerpageState extends State<registerpage> {
           'userName': username,
           'userEmail': useremail,
           'userPhone': userphone
+        });
+        await FirebaseFirestore.instance
+            .collection("chatUsers")
+            .doc(user.uid)
+            .set({
+          'uid': user.uid,
+          'name': username,
+          'email': useremail,
+          'role': "customer"
         });
         return (user.uid);
       } else {
@@ -251,11 +269,22 @@ class _registerpageState extends State<registerpage> {
                           var result = await futresult;
                           print(result);
                           if (result != "failure") {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                'Fill the Details completely !!',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                            ));
+                          }
+                          if (result != "failure") {
                             doctorName.clear();
                             doctorEmail.clear();
                             doctorPhone.clear();
                             doctorPassword.clear();
                             doctorkvsc.clear();
+
                             Navigator.pushNamed(
                               context,
                               '/pagenavpage',

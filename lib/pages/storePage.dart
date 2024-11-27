@@ -5,7 +5,9 @@ import 'package:veterinary_app/utils/petTile.dart';
 
 class storePage extends StatefulWidget {
   String currentUserId;
-  storePage({super.key, required this.currentUserId});
+  String switchValue;
+  storePage(
+      {super.key, required this.currentUserId, required this.switchValue});
 
   @override
   State<storePage> createState() => _storePageState();
@@ -39,6 +41,10 @@ class _storePageState extends State<storePage> {
           'height': data['height'] ?? 0.0,
           'weight': data['weight'] ?? 0.0,
           'petId': data['petId'],
+          'petPrice': data['petPrice'] ?? '0',
+          'ownerEmail': data['ownerEmail'],
+          'ownerId': data['ownerId'],
+          'ownerName': data['ownerName'],
         };
       }).toList();
 
@@ -77,7 +83,7 @@ class _storePageState extends State<storePage> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const Text('Pets Waiting For You',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 27)),
             GestureDetector(
               onTap: () {},
               child: const Text(
@@ -101,6 +107,7 @@ class _storePageState extends State<storePage> {
                 itemBuilder: (context, index) {
                   final pet = petList[index];
                   return petTile(
+                    switchValue: widget.switchValue,
                     name: pet['name'],
                     breed: pet['breed'],
                     animalType: pet['animalType'],
@@ -109,6 +116,10 @@ class _storePageState extends State<storePage> {
                     weight: pet['weight'],
                     CurrentUserId: widget.currentUserId,
                     PetId: pet['petId'],
+                    PetPrice: pet['petPrice'],
+                    ownerName: pet['ownerName'],
+                    ownerEmail: pet['ownerEmail'],
+                    ownerId: pet['ownerId'],
                   );
                 })),
       ),

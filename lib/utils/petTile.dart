@@ -1,8 +1,12 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/pages/soloChat.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
 class petTile extends StatelessWidget {
+  final String switchValue;
   final String breed;
   final double height;
   final double weight;
@@ -11,9 +15,14 @@ class petTile extends StatelessWidget {
   final String animalType;
   final String CurrentUserId;
   final String PetId;
+  final String PetPrice;
+  final String ownerName;
+  final String ownerEmail;
+  final String ownerId;
 
   petTile(
       {super.key,
+      required this.switchValue,
       required this.name,
       required this.breed,
       required this.animalType,
@@ -21,7 +30,11 @@ class petTile extends StatelessWidget {
       required this.height,
       required this.weight,
       required this.CurrentUserId,
-      required this.PetId});
+      required this.PetId,
+      required this.PetPrice,
+      required this.ownerName,
+      required this.ownerEmail,
+      required this.ownerId});
 
   Future<String> addPetToCart(
       {required String userid, required String petid}) async {
@@ -54,7 +67,7 @@ class petTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(left: 25),
       width: 280,
-      height: 250, // Set your desired height here
+      height: 300,
       decoration: BoxDecoration(
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
@@ -64,33 +77,93 @@ class petTile extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              getImagePath(animalType, breed),
-              height: 300, // Adjust the height of the image as needed
-              width: 300,
-              // width: double.infinity, // Make the image fill the width
-              fit: BoxFit.cover, // Adjust the image to fit within its container
-            ),
+            child: Stack(children: [
+              GestureDetector(
+                onDoubleTap: () async {
+                  var response = await addPetToCart(
+                    userid: CurrentUserId,
+                    petid: PetId,
+                  );
+                  if (response == "success") {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Text('Successfully added!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pop(), // Close the dialog
+                              child: Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Text('Already added in your Cart!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pop(), // Close the dialog
+                              child: Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+                child: Image.asset(
+                  getImagePath(animalType, breed),
+                  height: 250,
+                  width: 280,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  child: const Icon(
+                    Icons.favorite,
+                    size: 28,
+                    color: Colors.black,
+                  ),
+                ),
+              )
+            ]),
+          ),
+          SizedBox(
+            height: 24,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Text(
-              "$name is a $age-year-old $breed $animalType ready to bring joy and love to your life!",
-              style: TextStyle(color: Colors.grey[600]),
+              "$name is a $age-year-old $animalType of $breed breed ready to bring joy and love to your life!",
+              style: TextStyle(color: Colors.grey[800], fontSize: 15),
             ),
           ),
           Spacer(),
           Padding(
-            padding: const EdgeInsets.only(left: 25),
+            padding: const EdgeInsets.only(left: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      animalType,
+                      name,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -105,46 +178,22 @@ class petTile extends StatelessWidget {
                     ),
                   ],
                 ),
+                Text(
+                  "₹ " + PetPrice,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 24),
+                ),
                 GestureDetector(
-                  onTap: () async {
-                    var response = await addPetToCart(
-                      userid: CurrentUserId,
-                      petid: PetId,
-                    );
-                    if (response == "success") {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Text('Successfully added!'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context)
-                                    .pop(), // Close the dialog
-                                child: Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Text('Already added in your Cart!'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context)
-                                    .pop(), // Close the dialog
-                                child: Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatPage(
+                          switchValue: switchValue,
+                          recieverRole: "customer",
+                          receiverName: ownerName,
+                          receiverEmail: ownerEmail,
+                          receiverID: ownerId),
+                    ),
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
@@ -155,7 +204,7 @@ class petTile extends StatelessWidget {
                       ),
                     ),
                     child: const Icon(
-                      Icons.add,
+                      Icons.forum,
                       color: Colors.white,
                     ),
                   ),

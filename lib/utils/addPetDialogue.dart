@@ -2,10 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/utils/imageProvider.dart';
 
 // ignore_for_file: prefer_const_constructors
 
-class ShowPetInfoDialog extends StatelessWidget {
+class ShowPetInfoDialog extends StatefulWidget {
   final String currentUserId;
   final VoidCallback onPetAdded;
 
@@ -15,6 +16,11 @@ class ShowPetInfoDialog extends StatelessWidget {
     required this.onPetAdded,
   }) : super(key: key);
 
+  @override
+  State<ShowPetInfoDialog> createState() => _ShowPetInfoDialogState();
+}
+
+class _ShowPetInfoDialogState extends State<ShowPetInfoDialog> {
   // Function to save data to Firestore
   Future<void> savePetDetailsToFirestore({
     required String petType,
@@ -63,34 +69,17 @@ class ShowPetInfoDialog extends StatelessWidget {
         child: SizedBox(
           width: 400,
           child: _DialogContent(
-            currentUserId: currentUserId,
-            onPetAdded: onPetAdded,
+            currentUserId: widget.currentUserId,
+            onPetAdded: widget.onPetAdded,
             savePetDetailsToFirestore: savePetDetailsToFirestore,
           ),
         ),
       ),
     );
-    //   },
-    // );
-    //},
-    // child: Container(
-    //   height: 30,
-    //   width: 140,
-    //   decoration: BoxDecoration(
-    //       color: Colors.white, borderRadius: BorderRadius.circular(6)),
-    //   child: Center(
-    //     child: Text(
-    //       "Add Pet  +",
-    //       style: TextStyle(
-    //           fontWeight: FontWeight.bold, fontSize: 22, color: Colors.blue),
-    //     ),
-    //   ),
-    // ),
-    //);
   }
 }
 
-class _DialogContent extends StatelessWidget {
+class _DialogContent extends StatefulWidget {
   final String currentUserId;
   final VoidCallback onPetAdded;
   final Future<void> Function({
@@ -110,28 +99,27 @@ class _DialogContent extends StatelessWidget {
   });
 
   @override
+  State<_DialogContent> createState() => _DialogContentState();
+}
+
+class _DialogContentState extends State<_DialogContent> {
+  // Convert these to state variables
+  String? _selectedPetType;
+  String? _selectedBreed;
+
+  @override
   Widget build(BuildContext context) {
-    String? selectedPetType;
-    String? selectedBreed;
     final TextEditingController namecontroller = TextEditingController();
     final TextEditingController ageController = TextEditingController();
     final TextEditingController heightController = TextEditingController();
     final TextEditingController weightController = TextEditingController();
 
     final List<String> petTypes = ['Cat', 'Dog', 'Fish'];
-    final List<String> breeds = [
-      'Ragdoll',
-      'Persian',
-      'Maine coon',
-      'Siberian',
-      'Bulldog',
-      'Golden Retriever',
-      'Husky',
-      'Pomenarian',
-      'Clown',
-      'Goldfish',
-      'Siamese'
-    ];
+    final Map<String, List<String>> petTypeToBreedsMap = {
+      'Cat': ['Ragdoll', 'Persian', 'Maine coon', 'Siberian'],
+      'Dog': ['Bulldog', 'Golden Retriever', 'Husky', 'Pomenarian'],
+      'Fish': ['Clownfish', 'Goldfish', 'Siamese'],
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,22 +127,36 @@ class _DialogContent extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              'assets/images/logo.png', // Replace with your image asset
-              width: 120,
-              height: 120,
-              fit: BoxFit.cover,
+            Container(
+              margin: const EdgeInsets.all(10),
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                // Background color for image container
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  getImagePath(_selectedPetType ?? '', _selectedBreed ?? ''),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(labelText: 'Pet Type'),
-                    value: selectedPetType,
-                    onChanged: (value) {
-                      selectedPetType = value;
+                    value: _selectedPetType,
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedPetType = value;
+                        _selectedBreed =
+                            null; // Reset breed when pet type changes
+                      });
                     },
                     items: petTypes
                         .map((type) => DropdownMenuItem<String>(
@@ -166,16 +168,27 @@ class _DialogContent extends StatelessWidget {
                   SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(labelText: 'Breed'),
-                    value: selectedBreed,
-                    onChanged: (value) {
-                      selectedBreed = value;
-                    },
-                    items: breeds
-                        .map((breed) => DropdownMenuItem<String>(
-                              value: breed,
-                              child: Text(breed),
-                            ))
-                        .toList(),
+                    value: _selectedBreed,
+                    // Make sure this is only enabled when a pet type is selected
+                    onChanged: _selectedPetType != null
+                        ? (String? value) {
+                            setState(() {
+                              _selectedBreed = value;
+                            });
+                          }
+                        : null,
+                    // Only show breeds for the selected pet type
+                    items: _selectedPetType != null
+                        ? petTypeToBreedsMap[_selectedPetType]!
+                            .map((breed) => DropdownMenuItem<String>(
+                                  value: breed,
+                                  child: Text(breed),
+                                ))
+                            .toList()
+                        : null,
+                    hint: Text('Select Pet Type First'),
+                    // Disable the dropdown if no pet type is selected
+                    disabledHint: Text('Select Pet Type First'),
                   ),
                 ],
               ),
@@ -204,7 +217,7 @@ class _DialogContent extends StatelessWidget {
         TextField(
           controller: heightController,
           decoration: InputDecoration(
-            labelText: 'Height',
+            labelText: 'Height (in cm)',
             border: OutlineInputBorder(),
           ),
           keyboardType: TextInputType.number,
@@ -213,7 +226,7 @@ class _DialogContent extends StatelessWidget {
         TextField(
           controller: weightController,
           decoration: InputDecoration(
-            labelText: 'Weight',
+            labelText: 'Weight (in kg)',
             border: OutlineInputBorder(),
           ),
           keyboardType: TextInputType.number,
@@ -231,27 +244,27 @@ class _DialogContent extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 // Collect values from text fields and dropdowns
-                String petType = selectedPetType ?? '';
-                String breed = selectedBreed ?? '';
+                String petType = _selectedPetType ?? '';
+                String breed = _selectedBreed ?? '';
                 String petName = namecontroller.text ?? '';
                 int age = int.tryParse(ageController.text) ?? 0;
                 double height = double.tryParse(heightController.text) ?? 0.0;
                 double weight = double.tryParse(weightController.text) ?? 0.0;
 
                 // Save to Firebase
-                await savePetDetailsToFirestore(
+                await widget.savePetDetailsToFirestore(
                   petType: petType,
                   breed: breed,
                   petName: petName,
                   age: age,
                   height: height,
                   weight: weight,
-                  userid: currentUserId,
+                  userid: widget.currentUserId,
                 );
 
                 // Close the dialog
                 Navigator.of(context).pop();
-                onPetAdded();
+                widget.onPetAdded();
               },
               child: Text('Save'),
             ),
