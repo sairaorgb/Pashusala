@@ -7,14 +7,15 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final String messageId;
   final String userId;
+  final String recieverRole;
 
-  ChatBubble({
-    super.key,
-    required this.isCurrentUser,
-    required this.data,
-    required this.messageId,
-    required this.userId,
-  });
+  ChatBubble(
+      {super.key,
+      required this.isCurrentUser,
+      required this.data,
+      required this.messageId,
+      required this.userId,
+      required this.recieverRole});
 
   void _showOptions(BuildContext context, String messageId, String userId) {
     showModalBottomSheet(
@@ -202,7 +203,9 @@ class ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: isCurrentUser ? Colors.blue.shade900 : Colors.blue.shade900,
+          color: (recieverRole == "doctor")
+              ? Colors.green.shade900
+              : Colors.blue.shade900,
         ),
         margin: const EdgeInsets.only(bottom: 12.0),
         child: Column(

@@ -140,10 +140,15 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               // Full screen background image
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/chatbg.jpg',
-                  fit: BoxFit.cover,
-                ),
+                child: (widget.recieverRole == "doctor")
+                    ? Image.asset(
+                        'assets/images/doctorchatbg.jpeg',
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        'assets/images/chatbg.jpg',
+                        fit: BoxFit.cover,
+                      ),
               ),
               // Main content column
               Positioned(
@@ -220,6 +225,7 @@ class _ChatPageState extends State<ChatPage> {
           data: data,
           messageId: doc.id,
           userId: data["senderID"],
+          recieverRole: widget.recieverRole,
         ),
       ],
     );
@@ -230,6 +236,7 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         Expanded(
           child: ChatTextField(
+            role: widget.recieverRole,
             controller: _messageController,
             hintText: "type a message",
             obscureText: false,
@@ -238,12 +245,16 @@ class _ChatPageState extends State<ChatPage> {
         ),
         const SizedBox(width: 5.0),
         CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
+          backgroundColor: (widget.recieverRole == "doctor")
+              ? Colors.green.shade100
+              : Colors.blue.shade100,
           child: IconButton(
             onPressed: sendMessage,
             icon: Icon(
               Icons.arrow_upward,
-              color: Colors.blue.shade900,
+              color: (widget.recieverRole == "doctor")
+                  ? Colors.green.shade900
+                  : Colors.blue.shade900,
             ),
           ),
         ),
