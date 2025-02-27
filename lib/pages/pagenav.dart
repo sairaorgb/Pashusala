@@ -107,7 +107,7 @@ class _pageNavState extends State<pageNav> {
               child: Text(
                 "Pashushala",
                 style: GoogleFonts.sansita(
-                  fontSize: 38,
+                  fontSize: 42,
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                 ),
@@ -120,7 +120,7 @@ class _pageNavState extends State<pageNav> {
           return IconButton(
             icon: Icon(
               Icons.menu,
-              size: 28,
+              size: 26,
               color: Colors.white,
             ),
             onPressed: () => Scaffold.of(context).openDrawer(),

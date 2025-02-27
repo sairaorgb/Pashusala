@@ -7,6 +7,7 @@ import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
+import 'package:veterinary_app/pages/roleSelectPage.dart';
 import 'package:veterinary_app/pages/welcomepage.dart';
 
 Future<void> main() async {
@@ -27,7 +28,7 @@ class myApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: welcomePage(),
+      home: Roleselectpage(),
       routes: {
         '/loginpage': (context) => loginpage(switchbool: false),
         '/pagenavpage': (context) => pageNav(

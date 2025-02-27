@@ -123,7 +123,7 @@ class _cartPageState extends State<cartPage> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 18),
+          padding: const EdgeInsets.only(top: 35.0, left: 18, right: 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

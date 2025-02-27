@@ -3,12 +3,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:veterinary_app/pages/cartPage.dart';
-import 'package:veterinary_app/pages/storePage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
-import 'package:veterinary_app/utils/imageProvider.dart';
 
 class homePage extends StatefulWidget {
   String switchValue;
@@ -101,8 +97,8 @@ class _homePageState extends State<homePage> {
                     // "My Pets" text on the left
                     Text(
                       "My Pets",
-                      style: GoogleFonts.dmSerifDisplay(
-                        fontSize: 24,
+                      style: GoogleFonts.sahitya(
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

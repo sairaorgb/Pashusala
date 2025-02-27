@@ -82,62 +82,62 @@ class _welcomePageState extends State<welcomePage> {
             SizedBox(
               height: 20,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => loginpage(switchbool: false))),
-                  child: Container(
-                    height: 36,
-                    width: 140,
-                    decoration: BoxDecoration(
-                        // color: Color.fromRGBO(39, 157, 157, 1),
-                        color: Color.fromRGBO(8, 164, 167, 1),
-                        // color: Colors.blue[400],
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: Text(
-                        "Customer",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 100,
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => loginpage(switchbool: true),
-                      )),
-                  child: Container(
-                    height: 36,
-                    width: 100,
-                    decoration: BoxDecoration(
-                        // color: Colors.green,
-                        color: Color.fromRGBO(8, 164, 167, 1),
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: Text(
-                        "Doctor",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            )
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     GestureDetector(
+            //       onTap: () => Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //               builder: (context) => loginpage(switchbool: false))),
+            //       child: Container(
+            //         height: 36,
+            //         width: 140,
+            //         decoration: BoxDecoration(
+            //             // color: Color.fromRGBO(39, 157, 157, 1),
+            //             color: Color.fromRGBO(8, 164, 167, 1),
+            //             // color: Colors.blue[400],
+            //             borderRadius: BorderRadius.circular(12)),
+            //         child: Center(
+            //           child: Text(
+            //             "Customer",
+            //             style: TextStyle(
+            //                 color: Colors.white,
+            //                 fontSize: 20,
+            //                 fontWeight: FontWeight.bold),
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //     SizedBox(
+            //       width: 100,
+            //     ),
+            //     GestureDetector(
+            //       onTap: () => Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) => loginpage(switchbool: true),
+            //           )),
+            //       child: Container(
+            //         height: 36,
+            //         width: 100,
+            //         decoration: BoxDecoration(
+            //             // color: Colors.green,
+            //             color: Color.fromRGBO(8, 164, 167, 1),
+            //             borderRadius: BorderRadius.circular(12)),
+            //         child: Center(
+            //           child: Text(
+            //             "Doctor",
+            //             style: TextStyle(
+            //                 color: Colors.white,
+            //                 fontSize: 20,
+            //                 fontWeight: FontWeight.bold),
+            //           ),
+            //         ),
+            //       ),
+            //     )
+            //   ],
+            // )
           ],
         ),
       ),

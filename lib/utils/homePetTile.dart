@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
 class homePageTile extends StatefulWidget {
@@ -118,6 +119,7 @@ class _homePageTileState extends State<homePageTile> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Color.fromRGBO(250, 243, 235, 1),
       child: Column(
         children: [
           Row(
@@ -153,8 +155,8 @@ class _homePageTileState extends State<homePageTile> {
                         children: [
                           Text(
                             widget.name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                            style: GoogleFonts.fahkwang(
+                              fontWeight: FontWeight.w900,
                               fontSize: 18,
                             ),
                           ),
@@ -166,27 +168,30 @@ class _homePageTileState extends State<homePageTile> {
                           ),
                         ],
                       ),
+                      SizedBox(
+                        height: 5,
+                      ),
                       Text(
-                        widget.animalType,
-                        style: TextStyle(
+                        widget.breed,
+                        style: GoogleFonts.fahkwang(
                           fontSize: 14,
                           color: Colors.grey[600],
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 14, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          // Text(
-                          //   '${widget.location} (${widget.distance})',
-                          //   style: TextStyle(
-                          //     fontSize: 12,
-                          //     color: Colors.grey,
-                          //   ),
-                          // ),
-                        ],
-                      ),
+                      // Row(
+                      //   children: [
+                      //     Icon(Icons.location_on, size: 14, color: Colors.grey),
+                      //     const SizedBox(width: 4),
+                      //     // Text(
+                      //     //   '${widget.location} (${widget.distance})',
+                      //     //   style: TextStyle(
+                      //     //     fontSize: 12,
+                      //     //     color: Colors.grey,
+                      //     //   ),
+                      //     // ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
@@ -216,7 +221,7 @@ class _homePageTileState extends State<homePageTile> {
                     children: [
                       _infoBox("Age", "${widget.age}"),
                       _infoBox("Height", "${widget.height}"),
-                      _infoBox("Breed", widget.breed),
+                      _infoBox("Type", widget.animalType),
                       _infoBox("Weight", "${widget.weight}"),
                     ],
                   ),

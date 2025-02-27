@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/pages/soloChat.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
@@ -41,7 +42,7 @@ class cartTile extends StatelessWidget {
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Color.fromRGBO(250, 243, 235, 1),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 2),
@@ -54,8 +55,8 @@ class cartTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
               getImagePath(animalType, breed),
-              width: 90,
-              height: 90,
+              width: 100,
+              height: 110,
               fit: BoxFit.cover,
             ),
           ),
@@ -70,17 +71,20 @@ class cartTile extends StatelessWidget {
                 // Pet Name
                 Text(
                   PetName,
-                  style: TextStyle(
+                  style: GoogleFonts.sansita(
                     color: Colors.black,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
+                SizedBox(
+                  height: 6,
+                ),
                 // Animal Type
                 Text(
-                  animalType,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  breed,
+                  style: GoogleFonts.sahitya(
+                      fontSize: 16, color: Colors.grey[700]),
                 ),
 
                 SizedBox(height: 6),

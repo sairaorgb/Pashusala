@@ -74,9 +74,9 @@ class _petTileState extends State<petTile> {
     return Container(
       margin: const EdgeInsets.only(left: 18),
       width: 280,
-      height: 300,
+      height: 280,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Color.fromRGBO(250, 243, 235, 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -165,7 +165,7 @@ class _petTileState extends State<petTile> {
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Text(
               "${widget.name} is a ${widget.age}-year-old ${widget.animalType} of ${widget.breed} breed ready to bring joy and love to your life!",
-              style: GoogleFonts.inter(color: Colors.grey[800], fontSize: 15),
+              style: GoogleFonts.sahitya(color: Colors.grey[800], fontSize: 15),
               textAlign: TextAlign.center,
             ),
           ),
@@ -181,7 +181,7 @@ class _petTileState extends State<petTile> {
                   children: [
                     Text(
                       widget.name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.secularOne(
                         fontSize: 20,
                       ),
                     ),
@@ -190,13 +190,13 @@ class _petTileState extends State<petTile> {
                     ),
                     Text(
                       widget.breed,
-                      style: GoogleFonts.inter(color: Colors.grey),
+                      style: GoogleFonts.secularOne(color: Colors.grey),
                     ),
                   ],
                 ),
                 Text(
                   "₹ " + widget.PetPrice,
-                  style: GoogleFonts.dmSerifDisplay(
+                  style: GoogleFonts.secularOne(
                       fontWeight: FontWeight.w500, fontSize: 24),
                 ),
                 GestureDetector(
