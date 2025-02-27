@@ -1,5 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
 import 'package:veterinary_app/utils/petTile.dart';
 
@@ -59,70 +62,79 @@ class _storePageState extends State<storePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Container(
-        padding: const EdgeInsetsDirectional.all(12),
-        margin: const EdgeInsets.symmetric(horizontal: 25),
-        decoration: BoxDecoration(
-            color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Search", style: TextStyle(color: Colors.grey)),
-            Icon(Icons.search, color: Colors.grey)
-          ],
-        ),
-      ),
-      SizedBox(
-        height: 20,
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            const Text('Pets Waiting For You',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 27)),
-            GestureDetector(
-              onTap: () {},
-              child: const Text(
-                "See All",
-                style:
-                    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+    return Stack(
+      children: [
+        Container(
+          // height: 700,
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(240, 232, 213, 1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SizedBox(
+                height: 30,
               ),
-            )
-          ],
-        ),
-      ),
-      const SizedBox(
-        height: 40,
-      ),
-      SizedBox(
-        height: 450,
-        child: Expanded(
-            child: ListView.builder(
-                itemCount: petList.length,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  final pet = petList[index];
-                  return petTile(
-                    switchValue: widget.switchValue,
-                    name: pet['name'],
-                    breed: pet['breed'],
-                    animalType: pet['animalType'],
-                    age: pet['age'],
-                    height: pet['height'],
-                    weight: pet['weight'],
-                    CurrentUserId: widget.currentUserId,
-                    PetId: pet['petId'],
-                    PetPrice: pet['petPrice'],
-                    ownerName: pet['ownerName'],
-                    ownerEmail: pet['ownerEmail'],
-                    ownerId: pet['ownerId'],
-                  );
-                })),
-      ),
-    ]);
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Pets Waiting For You',
+                  style: GoogleFonts.dmSerifDisplay(
+                      fontWeight: FontWeight.bold, fontSize: 28),
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 18.0, right: 12),
+                child: TextField(
+                  decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: "Search",
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)))),
+                ),
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              SizedBox(
+                height: 450,
+                child: Expanded(
+                    child: ListView.builder(
+                        itemCount: petList.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          final pet = petList[index];
+                          return petTile(
+                            switchValue: widget.switchValue,
+                            name: pet['name'],
+                            breed: pet['breed'],
+                            animalType: pet['animalType'],
+                            age: pet['age'],
+                            height: pet['height'],
+                            weight: pet['weight'],
+                            CurrentUserId: widget.currentUserId,
+                            PetId: pet['petId'],
+                            PetPrice: pet['petPrice'],
+                            ownerName: pet['ownerName'],
+                            ownerEmail: pet['ownerEmail'],
+                            ownerId: pet['ownerId'],
+                          );
+                        })),
+              ),
+            ]),
+          ),
+        )
+      ],
+    );
   }
 }

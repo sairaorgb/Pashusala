@@ -2,10 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/pages/soloChat.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
-class petTile extends StatelessWidget {
+class petTile extends StatefulWidget {
   final String switchValue;
   final String breed;
   final double height;
@@ -36,6 +37,12 @@ class petTile extends StatelessWidget {
       required this.ownerEmail,
       required this.ownerId});
 
+  @override
+  State<petTile> createState() => _petTileState();
+}
+
+class _petTileState extends State<petTile> {
+  bool addedToWishList = false;
   Future<String> addPetToCart(
       {required String userid, required String petid}) async {
     try {
@@ -65,7 +72,7 @@ class petTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 25),
+      margin: const EdgeInsets.only(left: 18),
       width: 280,
       height: 300,
       decoration: BoxDecoration(
@@ -74,6 +81,7 @@ class petTile extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
@@ -81,10 +89,11 @@ class petTile extends StatelessWidget {
               GestureDetector(
                 onDoubleTap: () async {
                   var response = await addPetToCart(
-                    userid: CurrentUserId,
-                    petid: PetId,
+                    userid: widget.CurrentUserId,
+                    petid: widget.PetId,
                   );
                   if (response == "success") {
+                    addedToWishList = true;
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -101,6 +110,7 @@ class petTile extends StatelessWidget {
                       },
                     );
                   } else {
+                    addedToWishList = true;
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -119,7 +129,7 @@ class petTile extends StatelessWidget {
                   }
                 },
                 child: Image.asset(
-                  getImagePath(animalType, breed),
+                  getImagePath(widget.animalType, widget.breed),
                   height: 250,
                   width: 280,
                   fit: BoxFit.cover,
@@ -133,11 +143,17 @@ class petTile extends StatelessWidget {
                   decoration: const BoxDecoration(
                     color: Colors.transparent,
                   ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 28,
-                    color: Colors.black,
-                  ),
+                  child: addedToWishList
+                      ? Icon(
+                          Icons.favorite,
+                          size: 28,
+                          color: Colors.red,
+                        )
+                      : Icon(
+                          Icons.favorite_border_outlined,
+                          size: 28,
+                          color: Colors.white,
+                        ),
                 ),
               )
             ]),
@@ -148,8 +164,9 @@ class petTile extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Text(
-              "$name is a $age-year-old $animalType of $breed breed ready to bring joy and love to your life!",
-              style: TextStyle(color: Colors.grey[800], fontSize: 15),
+              "${widget.name} is a ${widget.age}-year-old ${widget.animalType} of ${widget.breed} breed ready to bring joy and love to your life!",
+              style: GoogleFonts.inter(color: Colors.grey[800], fontSize: 15),
+              textAlign: TextAlign.center,
             ),
           ),
           Spacer(),
@@ -163,9 +180,8 @@ class petTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                      widget.name,
+                      style: GoogleFonts.inter(
                         fontSize: 20,
                       ),
                     ),
@@ -173,25 +189,26 @@ class petTile extends StatelessWidget {
                       height: 5,
                     ),
                     Text(
-                      breed,
-                      style: const TextStyle(color: Colors.grey),
+                      widget.breed,
+                      style: GoogleFonts.inter(color: Colors.grey),
                     ),
                   ],
                 ),
                 Text(
-                  "₹ " + PetPrice,
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 24),
+                  "₹ " + widget.PetPrice,
+                  style: GoogleFonts.dmSerifDisplay(
+                      fontWeight: FontWeight.w500, fontSize: 24),
                 ),
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChatPage(
-                          switchValue: switchValue,
+                          switchValue: widget.switchValue,
                           recieverRole: "customer",
-                          receiverName: ownerName,
-                          receiverEmail: ownerEmail,
-                          receiverID: ownerId),
+                          receiverName: widget.ownerName,
+                          receiverEmail: widget.ownerEmail,
+                          receiverID: widget.ownerId),
                     ),
                   ),
                   child: Container(

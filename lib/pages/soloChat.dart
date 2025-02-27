@@ -4,11 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/services/chatService.dart';
 import 'package:veterinary_app/utils/chatBubble.dart';
 import 'package:veterinary_app/utils/chatTextField.dart';
+import 'dart:io';
 
 class ChatPage extends StatefulWidget {
   final String receiverName;
@@ -36,6 +38,17 @@ class _ChatPageState extends State<ChatPage> {
   final ChatService _chatService = ChatService();
 
   FocusNode chatFocusNode = FocusNode();
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _openCamera() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        _image = File(image.path);
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -170,6 +183,9 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
 
+                    _image == null
+                        ? Text("No image selected")
+                        : Image.file(_image!),
                     // User input area
                     Container(
                       margin: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 30.0),
@@ -244,6 +260,20 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
         const SizedBox(width: 5.0),
+        CircleAvatar(
+          backgroundColor: (widget.recieverRole == "doctor")
+              ? Colors.green.shade100
+              : Colors.blue.shade100,
+          child: IconButton(
+            onPressed: _openCamera,
+            icon: Icon(
+              Icons.camera_alt_sharp,
+              color: (widget.recieverRole == "doctor")
+                  ? Colors.green.shade900
+                  : Colors.blue.shade900,
+            ),
+          ),
+        ),
         CircleAvatar(
           backgroundColor: (widget.recieverRole == "doctor")
               ? Colors.green.shade100

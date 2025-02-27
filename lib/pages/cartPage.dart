@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/utils/cartTile.dart';
 
 class cartPage extends StatefulWidget {
@@ -112,57 +113,70 @@ class _cartPageState extends State<cartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(18.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "My WishList",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+    return Stack(children: [
+      Container(
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(240, 232, 213, 1),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
-          const SizedBox(
-            height: 25,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "My WishList",
+                style: GoogleFonts.dmSerifDisplay(
+                    fontWeight: FontWeight.bold, fontSize: 24),
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              Expanded(
+                  child: petList.isEmpty
+                      ? const Center(
+                          child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Your WishList is empty.",
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ))
+                      : ListView.builder(
+                          itemCount: petList.length,
+                          itemBuilder: (context, index) {
+                            final pet = petList[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: cartTile(
+                                  switchValue: widget.switchValue,
+                                  UserId: widget.UserId,
+                                  PetId: pet['petId'],
+                                  PetName: pet['name'],
+                                  animalType: pet['animalType'],
+                                  Price: pet['age'],
+                                  breed: pet['breed'],
+                                  PetPrice: pet['petPrice'],
+                                  ownerName: pet['ownerName'],
+                                  ownerEmail: pet['ownerEmail'],
+                                  ownerId: pet['ownerId'],
+                                  removeItemFromCart:
+                                      (String userid, String petId) async {
+                                    removeItemFromCart(
+                                        widget.UserId, pet['petId']);
+                                  }),
+                            );
+                          },
+                        ))
+            ],
           ),
-          Expanded(
-              child: petList.isEmpty
-                  ? const Center(
-                      child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Your WishList is empty.",
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ],
-                    ))
-                  : ListView.builder(
-                      itemCount: petList.length,
-                      itemBuilder: (context, index) {
-                        final pet = petList[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: cartTile(
-                              switchValue: widget.switchValue,
-                              UserId: widget.UserId,
-                              PetId: pet['petId'],
-                              PetName: pet['name'],
-                              animalType: pet['animalType'],
-                              Price: pet['age'],
-                              breed: pet['breed'],
-                              PetPrice: pet['petPrice'],
-                              ownerName: pet['ownerName'],
-                              ownerEmail: pet['ownerEmail'],
-                              ownerId: pet['ownerId'],
-                              removeItemFromCart:
-                                  (String userid, String petId) async {
-                                removeItemFromCart(widget.UserId, pet['petId']);
-                              }),
-                        );
-                      },
-                    ))
-        ],
+        ),
       ),
-    );
+    ]);
   }
 }

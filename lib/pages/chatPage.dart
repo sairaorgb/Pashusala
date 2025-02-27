@@ -14,7 +14,17 @@ class chatModule extends StatelessWidget {
   final ChatService _chatService = ChatService();
   @override
   Widget build(BuildContext context) {
-    return _buildUserList();
+    return Stack(children: [
+      Container(
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(240, 232, 213, 1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+          ),
+          child: _buildUserList())
+    ]);
   }
 
   Widget _buildUserList() {
@@ -189,7 +199,7 @@ class UserTile extends StatelessWidget {
                           text: userEmail,
                           size: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Colors.black,
                           // color: Theme.of(context).colorScheme.inversePrimary,
                         ),
                       ],

@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/storePage.dart';
@@ -81,9 +82,9 @@ class _homePageState extends State<homePage> {
     return Stack(
       children: [
         Container(
-          height: 700,
+          // height: 700,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Color.fromRGBO(240, 232, 213, 1),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(28),
               topRight: Radius.circular(28),
@@ -100,8 +101,8 @@ class _homePageState extends State<homePage> {
                     // "My Pets" text on the left
                     Text(
                       "My Pets",
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: GoogleFonts.dmSerifDisplay(
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

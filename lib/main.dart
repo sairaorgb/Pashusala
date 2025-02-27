@@ -41,6 +41,9 @@ class myApp extends StatelessWidget {
               currentUserId: '',
             )
       },
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.light,
     );
   }
 }

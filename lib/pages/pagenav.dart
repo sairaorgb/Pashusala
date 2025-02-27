@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
@@ -92,9 +93,10 @@ class _pageNavState extends State<pageNav> {
     ];
 
     return Scaffold(
-      backgroundColor: switchValue ? Colors.green[300] : Colors.blue[300],
+      backgroundColor:
+          switchValue ? Colors.green[300] : Color.fromRGBO(2, 16, 36, 1),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color.fromRGBO(16, 42, 66, 1),
         toolbarHeight: 130,
         title: Row(
           children: [
@@ -104,10 +106,11 @@ class _pageNavState extends State<pageNav> {
             SizedBox(
               child: Text(
                 "Pashushala",
-                style: TextStyle(
-                    fontSize: 38,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500),
+                style: GoogleFonts.sansita(
+                  fontSize: 38,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
@@ -264,14 +267,11 @@ class _pageNavState extends State<pageNav> {
       ),
       body: pages[currentPageIndex],
       bottomNavigationBar: GNav(
-          backgroundColor: switchValue
-              ? ((currentPageIndex != 1) ? Colors.green.shade300 : Colors.white)
-              : ((currentPageIndex != 1) ? Colors.blue.shade300 : Colors.white),
-          activeColor: Colors.black,
+          backgroundColor: Color.fromRGBO(240, 232, 213, 1),
+          activeColor: Color.fromRGBO(41, 52, 72, 1),
           mainAxisAlignment: MainAxisAlignment.center,
           color: Colors.grey.shade500,
           tabBorderRadius: 16,
-          // tabBackgroundColor: Colors.grey.shade200,
           onTabChange: (index) => onTabchange(index),
           selectedIndex: currentPageIndex,
           tabs: [
