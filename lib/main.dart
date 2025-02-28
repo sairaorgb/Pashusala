@@ -28,7 +28,7 @@ class myApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Roleselectpage(),
+      home: welcomePage(),
       routes: {
         '/loginpage': (context) => loginpage(switchbool: false),
         '/pagenavpage': (context) => pageNav(

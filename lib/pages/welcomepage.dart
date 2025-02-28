@@ -2,7 +2,9 @@
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
+import 'package:veterinary_app/pages/roleSelectPage.dart';
 
 class welcomePage extends StatefulWidget {
   const welcomePage({super.key});
@@ -25,14 +27,15 @@ class _welcomePageState extends State<welcomePage> {
         padding:
             const EdgeInsets.only(left: 16, right: 16.0, top: 90, bottom: 44),
         child: Column(
+          // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Align(
-              alignment: Alignment.topLeft,
+              alignment: Alignment.topCenter,
               child: Text(
                 'Pashushala',
-                style: TextStyle(
+                style: GoogleFonts.sansita(
                     color: Colors.black,
-                    fontSize: 64,
+                    fontSize: 68,
                     fontWeight: FontWeight.bold),
               ),
             ),
@@ -40,48 +43,72 @@ class _welcomePageState extends State<welcomePage> {
               height: 15,
             ),
             Align(
-                alignment: Alignment.topLeft,
+                alignment: Alignment.topCenter,
                 child: SizedBox(
-                  width: 250.0,
-                  child: DefaultTextStyle(
-                    style: const TextStyle(
-                      fontSize: 32.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    child: AnimatedTextKit(
-                      animatedTexts: [
-                        FadeAnimatedText('Quick Veterinary Service'),
-                        FadeAnimatedText('Pet Shop'),
-                        FadeAnimatedText('Pharmacy Support'),
-                        FadeAnimatedText('Real time Chat with feature')
-                      ],
+                  width: 300.0,
+                  child: Center(
+                    child: DefaultTextStyle(
+                      style: GoogleFonts.sansita(
+                        fontSize: 28.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      child: AnimatedTextKit(
+                        animatedTexts: [
+                          FadeAnimatedText('Quick Veterinary Service'),
+                          FadeAnimatedText('Pet Shop'),
+                          FadeAnimatedText('Pharmacy Support'),
+                          FadeAnimatedText('Real time Chat with Doctor')
+                        ],
+                      ),
                     ),
                   ),
                 )),
             Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Text(
-                  "  Select User Type  ",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-                Expanded(
-                    child: Divider(
-                  thickness: 2,
-                ))
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Roleselectpage(),
+                  )),
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(15)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Center(
+                        child: Text(
+                      "Get Started",
+                      style: GoogleFonts.secularOne(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 21),
+                    )),
+                  )),
+            )
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: Divider(
+            //         thickness: 2,
+            //       ),
+            //     ),
+            //     Text(
+            //       "  Select User Type  ",
+            //       style: TextStyle(
+            //           fontSize: 18,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.white),
+            //     ),
+            //     Expanded(
+            //         child: Divider(
+            //       thickness: 2,
+            //     ))
+            //   ],
+            // ),
+            // SizedBox(
+            //   height: 20,
+            // ),
             // Row(
             //   mainAxisAlignment: MainAxisAlignment.center,
             //   children: [

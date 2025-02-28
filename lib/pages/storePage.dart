@@ -91,16 +91,19 @@ class _storePageState extends State<storePage> {
               SizedBox(
                 height: 30,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 18.0, right: 12),
-                child: TextField(
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      hintText: "Search",
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)))),
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 18.0, right: 12),
+                  child: TextField(
+                    decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search),
+                        hintText: "Search",
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8)))),
+                  ),
                 ),
               ),
               const SizedBox(

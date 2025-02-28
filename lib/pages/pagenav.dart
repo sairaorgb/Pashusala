@@ -93,6 +93,7 @@ class _pageNavState extends State<pageNav> {
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor:
           switchValue ? Colors.green[300] : Color.fromRGBO(2, 16, 36, 1),
       appBar: AppBar(
@@ -265,7 +266,7 @@ class _pageNavState extends State<pageNav> {
           ],
         ),
       ),
-      body: pages[currentPageIndex],
+      body: SafeArea(child: pages[currentPageIndex]),
       bottomNavigationBar: GNav(
           backgroundColor: Color.fromRGBO(240, 232, 213, 1),
           activeColor: Color.fromRGBO(41, 52, 72, 1),
