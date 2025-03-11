@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/services/chatService.dart';
 import 'package:veterinary_app/utils/chatBubble.dart';
@@ -170,6 +169,7 @@ class _ChatPageState extends State<ChatPage> {
                 right: 0,
                 bottom: 0,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     // Optional app bar or header space
                     SizedBox(height: kToolbarHeight),
@@ -183,9 +183,18 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
 
-                    _image == null
-                        ? Text("No image selected")
-                        : Image.file(_image!),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          height: 300,
+                          child: _image == null
+                              ? Text("No image selected")
+                              : Image.file(_image!),
+                        ),
+                      ),
+                    ),
                     // User input area
                     Container(
                       margin: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 30.0),

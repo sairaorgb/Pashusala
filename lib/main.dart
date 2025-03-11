@@ -2,12 +2,12 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
-import 'package:veterinary_app/pages/roleSelectPage.dart';
 import 'package:veterinary_app/pages/welcomepage.dart';
 
 Future<void> main() async {
@@ -17,7 +17,7 @@ Future<void> main() async {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light));
   await Firebase.initializeApp();
-
+  await Geolocator.requestPermission();
   runApp(myApp());
 }
 
