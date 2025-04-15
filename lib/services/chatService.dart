@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
 class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -37,18 +38,31 @@ class ChatService extends ChangeNotifier {
     });
   }
 
-  Future<void> sendMessage(String receiverID, message) async {
+  Future<void> sendMessage(String receiverID, message,
+      {String? imagePath}) async {
     final String currentUserID = _auth.currentUser!.uid;
     final String currentUserEmail = _auth.currentUser!.email!;
+    late Message newMessage;
     final Timestamp timestamp = Timestamp.now();
-
-    Message newMessage = Message(
-      senderID: currentUserID,
-      senderEmail: currentUserEmail,
-      receiverID: receiverID,
-      message: message,
-      timestamp: timestamp,
-    );
+    if (message != '') {
+      newMessage = Message(
+        senderID: currentUserID,
+        senderEmail: currentUserEmail,
+        receiverID: receiverID,
+        message: message,
+        imagePath: '',
+        timestamp: timestamp,
+      );
+    } else {
+      newMessage = Message(
+        senderID: currentUserID,
+        senderEmail: currentUserEmail,
+        receiverID: receiverID,
+        message: message,
+        imagePath: imagePath,
+        timestamp: timestamp,
+      );
+    }
 
     List<String> ids = [currentUserID, receiverID];
     ids.sort();
@@ -130,6 +144,7 @@ class Message {
   final String senderEmail;
   final String receiverID;
   final String message;
+  final String? imagePath;
   final Timestamp timestamp;
 
   Message({
@@ -137,6 +152,7 @@ class Message {
     required this.senderEmail,
     required this.receiverID,
     required this.message,
+    this.imagePath,
     required this.timestamp,
   });
 
@@ -146,6 +162,7 @@ class Message {
       'senderEmail': receiverID,
       'receiverID': receiverID,
       'message': message,
+      'imagePath': imagePath,
       'timestamp': timestamp,
     };
   }

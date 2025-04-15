@@ -212,12 +212,31 @@ class ChatBubble extends StatelessWidget {
           crossAxisAlignment:
               isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            ChatText(
-              text: data["message"],
-              size: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.blue.shade50,
-            ),
+            (data["message"] != '')
+                ? ChatText(
+                    text: data["message"],
+                    size: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue.shade50,
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                          height: 300,
+                          child: Image.network(
+                            data["imagePath"],
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return CircularProgressIndicator();
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.error);
+                            },
+                          )),
+                    ),
+                  ),
             // const SizedBox(height: 2.0),
             // ChatText(
             //   text: "",
