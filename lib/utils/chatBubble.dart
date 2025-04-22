@@ -237,15 +237,6 @@ class ChatBubble extends StatelessWidget {
                           )),
                     ),
                   ),
-            // const SizedBox(height: 2.0),
-            // ChatText(
-            //   text: "",
-            //   size: 10,
-            //   fontWeight: FontWeight.w300,
-            //   color: isCurrentUser
-            //       ? Theme.of(context).colorScheme.tertiaryContainer
-            //       : Theme.of(context).colorScheme.inversePrimary,
-            // ),
           ],
         ),
       ),

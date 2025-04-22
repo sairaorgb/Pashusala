@@ -4,6 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:provider/provider.dart';
+import 'package:veterinary_app/cartStoreProvider.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/homepage.dart';
@@ -11,6 +14,7 @@ import 'package:veterinary_app/pages/storePage.dart';
 import 'package:veterinary_app/utils/chatText.dart';
 
 class pageNav extends StatefulWidget {
+  Database db;
   int CurrentPageIndex;
   String CurrentUserId;
   bool SwitchValue;
@@ -18,7 +22,8 @@ class pageNav extends StatefulWidget {
       {super.key,
       required this.CurrentPageIndex,
       required this.CurrentUserId,
-      required this.SwitchValue});
+      required this.SwitchValue,
+      required this.db});
 
   @override
   State<pageNav> createState() => _pageNavState();
@@ -29,15 +34,27 @@ class _pageNavState extends State<pageNav> {
   late bool switchValue;
   late String currentUserId;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.db.initDatabase();
+    Future.microtask(() async {
+      context.read<CartStoreProvider>().initCSP();
+    });
+    currentPageIndex = widget.CurrentPageIndex;
+    currentUserId = widget.CurrentUserId;
+    switchValue = widget.SwitchValue;
+  }
+
   void logout(BuildContext context) async {
     var authinstance = FirebaseAuth.instance;
-
     try {
+      widget.db.logOutUser();
       await authinstance.signOut();
       Navigator.pushNamedAndRemoveUntil(
         context,
-        '/loginpage', // Replace with your desired route name
-        (Route<dynamic> route) => false, // Remove all previous routes
+        '/loginpage',
+        (Route<dynamic> route) => false,
       );
     } catch (e) {
       showDialog(
@@ -47,15 +64,6 @@ class _pageNavState extends State<pageNav> {
         ),
       );
     }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    currentPageIndex = widget.CurrentPageIndex;
-    currentUserId = widget.CurrentUserId;
-    switchValue = widget.SwitchValue;
   }
 
   void onTabchange(int index) {
@@ -70,7 +78,6 @@ class _pageNavState extends State<pageNav> {
       Map<String, String> args =
           ModalRoute.of(context)?.settings.arguments as Map<String, String>;
       currentUserId = args['userId']!;
-
       if (args['switchValue'] == "true") {
         switchValue = true;
       }
@@ -81,8 +88,11 @@ class _pageNavState extends State<pageNav> {
         switchValue: switchValue.toString(),
       ),
       homePage(
-          switchValue: switchValue.toString(), currentUserId: currentUserId),
-      cartPage(
+        switchValue: switchValue.toString(),
+        currentUserId: currentUserId,
+        db: widget.db,
+      ),
+      CartPage(
         UserId: currentUserId,
         switchValue: switchValue.toString(),
       ),
@@ -157,6 +167,7 @@ class _pageNavState extends State<pageNav> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => pageNav(
+                                  db: widget.db,
                                   CurrentPageIndex: 1,
                                   CurrentUserId: currentUserId,
                                   SwitchValue: switchValue,
@@ -184,6 +195,7 @@ class _pageNavState extends State<pageNav> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => pageNav(
+                                  db: widget.db,
                                   CurrentPageIndex: 0,
                                   CurrentUserId: currentUserId,
                                   SwitchValue: switchValue,
@@ -211,6 +223,7 @@ class _pageNavState extends State<pageNav> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => pageNav(
+                                db: widget.db,
                                 CurrentPageIndex: 2,
                                 CurrentUserId: currentUserId,
                                 SwitchValue: switchValue)),
@@ -237,6 +250,7 @@ class _pageNavState extends State<pageNav> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => pageNav(
+                                db: widget.db,
                                 CurrentPageIndex: 3,
                                 CurrentUserId: currentUserId,
                                 SwitchValue: switchValue)),

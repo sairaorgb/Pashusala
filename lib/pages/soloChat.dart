@@ -156,9 +156,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void sendMessage({String? imagePath}) async {
-    print("reachd send msg");
     if (imagePath != null) {
-      print("reched condition loop");
       await _chatService.sendMessage(widget.receiverID, '',
           imagePath: imagePath);
       print("passed aeait");
@@ -191,28 +189,28 @@ class _ChatPageState extends State<ChatPage> {
               maxRadius: 9, // Adjust the radius as needed
             ),
           ),
-          actions: [
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => pageNav(
-                        CurrentPageIndex: 3,
-                        SwitchValue:
-                            (widget.switchValue == "true") ? true : false,
-                        CurrentUserId: FirebaseAuth.instance.currentUser!.uid)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.logout_outlined,
-                  color: (widget.recieverRole == "doctor")
-                      ? Colors.green.shade900
-                      : Colors.blue.shade900,
-                ),
-              ),
-            )
-          ],
+          // actions: [
+          //   GestureDetector(
+          //     onTap: () => Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //           builder: (context) => pageNav(
+          //               CurrentPageIndex: 3,
+          //               SwitchValue:
+          //                   (widget.switchValue == "true") ? true : false,
+          //               CurrentUserId: FirebaseAuth.instance.currentUser!.uid, db: null,)),
+          //     ),
+          //     child: Padding(
+          //       padding: const EdgeInsets.all(8.0),
+          //       child: Icon(
+          //         Icons.logout_outlined,
+          //         color: (widget.recieverRole == "doctor")
+          //             ? Colors.green.shade900
+          //             : Colors.blue.shade900,
+          //       ),
+          //     ),
+          //   )
+          // ],
           backgroundColor: Colors.blue.shade50,
           title: Text(
             widget.receiverName,

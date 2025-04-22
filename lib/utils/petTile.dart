@@ -1,8 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/pages/soloChat.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
@@ -43,31 +44,6 @@ class petTile extends StatefulWidget {
 
 class _petTileState extends State<petTile> {
   bool addedToWishList = false;
-  Future<String> addPetToCart(
-      {required String userid, required String petid}) async {
-    try {
-      // Reference to your Firestore collection
-      var snapshot = await FirebaseFirestore.instance
-          .collection('users_data')
-          .doc(userid)
-          .collection('userCart')
-          .where('petId', isEqualTo: petid)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        return "already added";
-      } else {
-        CollectionReference userCart = FirebaseFirestore.instance
-            .collection('users_data')
-            .doc(userid)
-            .collection('userCart');
-        userCart.add({'petId': petid});
-        return "success";
-      }
-    } catch (e) {
-      return e.toString();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +64,9 @@ class _petTileState extends State<petTile> {
             child: Stack(children: [
               GestureDetector(
                 onDoubleTap: () async {
-                  var response = await addPetToCart(
-                    userid: widget.CurrentUserId,
-                    petid: widget.PetId,
-                  );
+                  var response = await context
+                      .read<CartStoreProvider>()
+                      .addPetToCart(petid: widget.PetId);
                   if (response == "success") {
                     addedToWishList = true;
                     showDialog(

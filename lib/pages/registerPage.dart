@@ -2,11 +2,13 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class registerpage extends StatefulWidget {
-  registerpage({super.key});
+  Database db;
+  registerpage({super.key, required this.db});
 
   @override
   State<registerpage> createState() => _registerpageState();
@@ -49,6 +51,9 @@ class _registerpageState extends State<registerpage> {
           'email': doctoremail,
           'role': "doctor"
         });
+        widget.db.updateDatabase("userEmail", doctoremail);
+        widget.db.updateDatabase("password", doctorpassword);
+        widget.db.updateDatabase("role", "doctor");
         return (user.uid);
       } else {
         return ("failure");
@@ -88,6 +93,9 @@ class _registerpageState extends State<registerpage> {
           'email': useremail,
           'role': "customer"
         });
+        widget.db.updateDatabase("userEmail", useremail);
+        widget.db.updateDatabase("password", userPassword);
+        widget.db.updateDatabase("role", "user");
         return (user.uid);
       } else {
         return ("failure");

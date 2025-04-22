@@ -4,6 +4,11 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:provider/provider.dart';
+import 'package:veterinary_app/cartStoreProvider.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
@@ -17,34 +22,61 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light));
-  await Firebase.initializeApp();
 
+  await Firebase.initializeApp();
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
   );
   await Geolocator.requestPermission();
-  runApp(myApp());
+
+  await Hive.initFlutter();
+  await Hive.openBox('myBox');
+  Database db = Database();
+  var authResponse = await db.validateUser();
+
+  runApp(MultiProvider(
+    providers: [ChangeNotifierProvider(create: (_) => CartStoreProvider())],
+    child: myApp(
+      db: db,
+      authResponse: authResponse,
+    ),
+  ));
 }
 
 class myApp extends StatelessWidget {
-  const myApp({super.key});
+  Database db;
+  String authResponse;
+  myApp({super.key, required this.authResponse, required this.db});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: welcomePage(),
+      home: (authResponse == "success")
+          ? pageNav(
+              db: db,
+              CurrentPageIndex: 1,
+              CurrentUserId: db.user!.uid,
+              SwitchValue: db.switchValue)
+          : welcomePage(db: db),
       routes: {
-        '/loginpage': (context) => loginpage(switchbool: false),
+        '/loginpage': (context) => loginpage(
+              switchbool: false,
+              db: Database(),
+            ),
         '/pagenavpage': (context) => pageNav(
               CurrentPageIndex: 1,
               CurrentUserId: "",
               SwitchValue: false,
+              db: Database(),
             ),
-        '/registerpage': (context) => registerpage(),
+        '/registerpage': (context) => registerpage(
+              db: Database(),
+            ),
         '/homepage': (context) => homePage(
               switchValue: '',
               currentUserId: '',
+              db: Database(),
             )
       },
       theme: ThemeData.light(),

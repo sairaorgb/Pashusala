@@ -8,6 +8,7 @@
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <application
         android:label="pashushala"
+        android:largeHeap="true"
         android:name="${applicationName}"
         android:icon="@mipmap/image">
         <provider

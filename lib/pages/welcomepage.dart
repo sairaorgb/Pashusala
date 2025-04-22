@@ -3,11 +3,12 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:veterinary_app/pages/loginPage.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/roleSelectPage.dart';
 
 class welcomePage extends StatefulWidget {
-  const welcomePage({super.key});
+  Database db;
+  welcomePage({super.key, required this.db});
 
   @override
   State<welcomePage> createState() => _welcomePageState();
@@ -68,7 +69,7 @@ class _welcomePageState extends State<welcomePage> {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Roleselectpage(),
+                    builder: (context) => Roleselectpage(db: widget.db),
                   )),
               child: Container(
                   decoration: BoxDecoration(
@@ -86,85 +87,6 @@ class _welcomePageState extends State<welcomePage> {
                     )),
                   )),
             )
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Divider(
-            //         thickness: 2,
-            //       ),
-            //     ),
-            //     Text(
-            //       "  Select User Type  ",
-            //       style: TextStyle(
-            //           fontSize: 18,
-            //           fontWeight: FontWeight.bold,
-            //           color: Colors.white),
-            //     ),
-            //     Expanded(
-            //         child: Divider(
-            //       thickness: 2,
-            //     ))
-            //   ],
-            // ),
-            // SizedBox(
-            //   height: 20,
-            // ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: [
-            //     GestureDetector(
-            //       onTap: () => Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //               builder: (context) => loginpage(switchbool: false))),
-            //       child: Container(
-            //         height: 36,
-            //         width: 140,
-            //         decoration: BoxDecoration(
-            //             // color: Color.fromRGBO(39, 157, 157, 1),
-            //             color: Color.fromRGBO(8, 164, 167, 1),
-            //             // color: Colors.blue[400],
-            //             borderRadius: BorderRadius.circular(12)),
-            //         child: Center(
-            //           child: Text(
-            //             "Customer",
-            //             style: TextStyle(
-            //                 color: Colors.white,
-            //                 fontSize: 20,
-            //                 fontWeight: FontWeight.bold),
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //     SizedBox(
-            //       width: 100,
-            //     ),
-            //     GestureDetector(
-            //       onTap: () => Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) => loginpage(switchbool: true),
-            //           )),
-            //       child: Container(
-            //         height: 36,
-            //         width: 100,
-            //         decoration: BoxDecoration(
-            //             // color: Colors.green,
-            //             color: Color.fromRGBO(8, 164, 167, 1),
-            //             borderRadius: BorderRadius.circular(12)),
-            //         child: Center(
-            //           child: Text(
-            //             "Doctor",
-            //             style: TextStyle(
-            //                 color: Colors.white,
-            //                 fontSize: 20,
-            //                 fontWeight: FontWeight.bold),
-            //           ),
-            //         ),
-            //       ),
-            //     )
-            //   ],
-            // )
           ],
         ),
       ),

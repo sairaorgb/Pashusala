@@ -3,11 +3,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 
 class loginpage extends StatefulWidget {
   bool switchbool;
-  loginpage({super.key, required this.switchbool});
+  Database db;
+  loginpage({super.key, required this.switchbool, required this.db});
   @override
   State<loginpage> createState() => _loginpageState();
 }
@@ -41,9 +43,9 @@ class _loginpageState extends State<loginpage> {
             .get();
       }
       currentUserId = currentUser.uid;
-      if (userDoc.exists) {
-        final Data = userDoc.data();
-      }
+      widget.db.updateDatabase("userEmail", useremail);
+      widget.db.updateDatabase("password", password);
+      widget.db.updateDatabase("role", role);
       return ('success');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -60,9 +62,6 @@ class _loginpageState extends State<loginpage> {
 
   @override
   Widget build(BuildContext context) {
-    // bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
-    // var _switchValue = false;
-    // var _switchValue = switchValue;
     return Scaffold(
       body: Stack(
         children: [

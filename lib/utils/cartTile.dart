@@ -1,12 +1,13 @@
 // ignore_for_file: prefer_const_constructors_in_immutables, prefer_const_constructors
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/pages/soloChat.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
-class cartTile extends StatelessWidget {
+class CartTile extends StatelessWidget {
   final String switchValue;
   final String UserId;
   final String PetId;
@@ -18,9 +19,8 @@ class cartTile extends StatelessWidget {
   final String ownerName;
   final String ownerEmail;
   final String ownerId;
-  final Future<void> Function(String, String) removeItemFromCart;
 
-  cartTile({
+  const CartTile({
     super.key,
     required this.switchValue,
     required this.UserId,
@@ -33,7 +33,6 @@ class cartTile extends StatelessWidget {
     required this.ownerName,
     required this.ownerEmail,
     required this.ownerId,
-    required this.removeItemFromCart,
   });
 
   @override
@@ -63,7 +62,6 @@ class cartTile extends StatelessWidget {
 
           SizedBox(width: 17), // Space between image & content
 
-          // 📌 Content (Title, Subtitle, Buttons)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,12 +120,14 @@ class cartTile extends StatelessWidget {
                           icon: Icon(Icons.forum, size: 26),
                         ),
                         IconButton(
-                          onPressed: () {
-                            removeItemFromCart(UserId, PetId);
-                          },
-                          icon: Icon(Icons.delete_outline,
-                              size: 26, color: Colors.red),
-                        ),
+                            onPressed: () => context
+                                .read<CartStoreProvider>()
+                                .removePetFromCart(PetId),
+                            icon: Icon(
+                              Icons.delete_outline,
+                              size: 26,
+                              color: Colors.red,
+                            ))
                       ],
                     ),
                   ],

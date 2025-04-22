@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 
 class Roleselectpage extends StatelessWidget {
-  const Roleselectpage({super.key});
+  Database db;
+  Roleselectpage({super.key, required this.db});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,10 @@ class Roleselectpage extends StatelessWidget {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => loginpage(switchbool: false))),
+                      builder: (context) => loginpage(
+                            switchbool: false,
+                            db: db,
+                          ))),
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
@@ -74,7 +79,10 @@ class Roleselectpage extends StatelessWidget {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => loginpage(switchbool: true))),
+                      builder: (context) => loginpage(
+                            switchbool: true,
+                            db: db,
+                          ))),
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [

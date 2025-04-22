@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
 // ignore_for_file: prefer_const_constructors
@@ -9,11 +10,13 @@ import 'package:veterinary_app/utils/imageProvider.dart';
 class ShowPetInfoDialog extends StatefulWidget {
   final String currentUserId;
   final VoidCallback onPetAdded;
+  Database db;
 
-  const ShowPetInfoDialog({
+  ShowPetInfoDialog({
     Key? key,
     required this.currentUserId,
     required this.onPetAdded,
+    required this.db,
   }) : super(key: key);
 
   @override
@@ -21,48 +24,8 @@ class ShowPetInfoDialog extends StatefulWidget {
 }
 
 class _ShowPetInfoDialogState extends State<ShowPetInfoDialog> {
-  // Function to save data to Firestore
-  Future<void> savePetDetailsToFirestore({
-    required String petType,
-    required String breed,
-    required String petName,
-    required int age,
-    required double height,
-    required double weight,
-    required String userid,
-  }) async {
-    try {
-      // Reference to your Firestore collection
-      CollectionReference pets = FirebaseFirestore.instance
-          .collection('users_data')
-          .doc(userid)
-          .collection('petsOwned');
-
-      // Adding data
-      await pets.add({
-        'animalType': petType,
-        'breed': breed,
-        'name': petName,
-        'age': age,
-        'height': height,
-        'weight': weight,
-        'status': "Put On Sale"
-      });
-
-      print('Pet details saved successfully!');
-    } catch (e) {
-      print('Error saving pet details: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    //return //ElevatedButton(
-    //   onPressed: () {
-    //     // Show the dialog when the button is pressed
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
     return AlertDialog(
       title: Text('Enter Pet Details'),
       content: SingleChildScrollView(
@@ -71,7 +34,7 @@ class _ShowPetInfoDialogState extends State<ShowPetInfoDialog> {
           child: _DialogContent(
             currentUserId: widget.currentUserId,
             onPetAdded: widget.onPetAdded,
-            savePetDetailsToFirestore: savePetDetailsToFirestore,
+            savePetDetailsToFirestore: widget.db.savePetDetailsToFirestore,
           ),
         ),
       ),
