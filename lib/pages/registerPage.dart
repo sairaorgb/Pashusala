@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, non_constant_identifier_names
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, must_be_immutable
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,15 +6,15 @@ import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class registerpage extends StatefulWidget {
+class Registerpage extends StatefulWidget {
   Database db;
-  registerpage({super.key, required this.db});
+  Registerpage({super.key, required this.db});
 
   @override
-  State<registerpage> createState() => _registerpageState();
+  State<Registerpage> createState() => _RegisterpageState();
 }
 
-class _registerpageState extends State<registerpage> {
+class _RegisterpageState extends State<Registerpage> {
   TextEditingController userName = TextEditingController();
   TextEditingController userEmail = TextEditingController();
   TextEditingController userPhone = TextEditingController();
@@ -275,7 +275,6 @@ class _registerpageState extends State<registerpage> {
                               doctorPhone.text,
                               doctorPassword.text);
                           var result = await futresult;
-                          print(result);
                           if (result != "failure") {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(
@@ -305,7 +304,7 @@ class _registerpageState extends State<registerpage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  result!,
+                                  result,
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 duration: Duration(seconds: 2),
@@ -354,7 +353,7 @@ class _registerpageState extends State<registerpage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  result!,
+                                  result,
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 duration: Duration(seconds: 2),

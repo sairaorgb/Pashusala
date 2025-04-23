@@ -1,20 +1,14 @@
 // ignore_for_file: prefer_const_constructors
-
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/services/chatService.dart';
 import 'package:veterinary_app/utils/chatBubble.dart';
 import 'package:veterinary_app/utils/chatTextField.dart';
-import 'dart:io';
 
 class ChatPage extends StatefulWidget {
   final String receiverName;
@@ -41,7 +35,6 @@ class _ChatPageState extends State<ChatPage> {
   final ChatService _chatService = ChatService();
 
   FocusNode chatFocusNode = FocusNode();
-  File? _image;
   Uint8List? _imageBytes;
   final ImagePicker _picker = ImagePicker();
 
@@ -50,7 +43,6 @@ class _ChatPageState extends State<ChatPage> {
 
     if (image != null) {
       setState(() async {
-        _image = File(image.path);
         _imageBytes = await image.readAsBytes();
         var imageUrl = await uploadImage(_imageBytes!,
             'chat_images/${DateTime.now().millisecondsSinceEpoch}.png');
@@ -62,63 +54,16 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<String> uploadImage(Uint8List imageBytes, String imagePath) async {
     try {
-      // Get reference to the storage location
       final storageRef = FirebaseStorage.instance.ref().child(imagePath);
-
-      // Upload the image
       final uploadTask = storageRef.putData(imageBytes);
-
-      // Wait for the upload to complete
       final snapshot = await uploadTask.whenComplete(() => null);
-
-      // Get the download URL after upload is complete
       final downloadUrl = await snapshot.ref.getDownloadURL();
-
-      // Return the download URL
       return downloadUrl;
     } catch (e) {
-      // Handle any errors
       print('Error uploading image: $e');
       throw e; // Optionally rethrow the error
     }
   }
-
-  // Future<String?> uploadImage(Uint8List imageBytes, String imagePath) async {
-  //   print('🧪 Starting testStorageConnectionVerbose');
-
-  //   await FirebaseAppCheck.instance.getToken(true).then((token) {
-  //     print("🔥 App Check Token: $token");
-  //   }).catchError((error) {
-  //     print("❌ Failed to get App Check token: $error");
-  //   });
-
-  //   try {
-  //     const bucketName = 'veternary-cfcc8.firebasestorage.app';
-  //     final storage = FirebaseStorage.instanceFor(bucket: bucketName);
-  //     final rootRef = storage.ref();
-
-  //     try {
-  //       final url =
-  //           await FirebaseStorage.instance.ref("cat.jpeg").getDownloadURL();
-  //       print("✅ URL: $url");
-  //     } catch (e) {
-  //       print("❌ Error: $e");
-  //     }
-
-  //     // Try downloading a specific file
-  //     final catRef = storage.ref().child('cat.jpeg');
-  //     print('📥 Trying to get download URL for cat.jpeg...');
-  //     final downloadUrl = await catRef.getDownloadURL();
-  //     print('✅ Download URL: $downloadUrl');
-  //   } on FirebaseException catch (e) {
-  //     print('❌ FirebaseException');
-  //     print('🔸 Code: ${e.code}');
-  //     print('🔸 Message: ${e.message}');
-  //   } catch (e, stackTrace) {
-  //     print('💥 Unexpected Error: $e');
-  //     print(stackTrace);
-  //   }
-  // }
 
   @override
   void initState() {
@@ -160,7 +105,6 @@ class _ChatPageState extends State<ChatPage> {
       await _chatService.sendMessage(widget.receiverID, '',
           imagePath: imagePath);
       print("passed aeait");
-      _image = null;
       _imageBytes = null;
     }
 
@@ -189,28 +133,6 @@ class _ChatPageState extends State<ChatPage> {
               maxRadius: 9, // Adjust the radius as needed
             ),
           ),
-          // actions: [
-          //   GestureDetector(
-          //     onTap: () => Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //           builder: (context) => pageNav(
-          //               CurrentPageIndex: 3,
-          //               SwitchValue:
-          //                   (widget.switchValue == "true") ? true : false,
-          //               CurrentUserId: FirebaseAuth.instance.currentUser!.uid, db: null,)),
-          //     ),
-          //     child: Padding(
-          //       padding: const EdgeInsets.all(8.0),
-          //       child: Icon(
-          //         Icons.logout_outlined,
-          //         color: (widget.recieverRole == "doctor")
-          //             ? Colors.green.shade900
-          //             : Colors.blue.shade900,
-          //       ),
-          //     ),
-          //   )
-          // ],
           backgroundColor: Colors.blue.shade50,
           title: Text(
             widget.receiverName,
@@ -256,16 +178,13 @@ class _ChatPageState extends State<ChatPage> {
                     Expanded(
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child:
-                            _buildMessageList(), // Note the method name without asterisk
+                        child: _buildMessageList(),
                       ),
                     ),
 
-                    // User input area
                     Container(
                       margin: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 30.0),
-                      child: _buildUserInput(
-                          context), // Note the method name without asterisk
+                      child: _buildUserInput(context),
                     )
                   ],
                 ),
@@ -276,7 +195,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageList() {
-    // String senderId = _authService.getCurrentUser()!.uid;
     String senderId = FirebaseAuth.instance.currentUser!.uid;
 
     return StreamBuilder(

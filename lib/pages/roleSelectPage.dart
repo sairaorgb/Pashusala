@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,7 +34,7 @@ class Roleselectpage extends StatelessWidget {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => loginpage(
+                      builder: (context) => Loginpage(
                             switchbool: false,
                             db: db,
                           ))),
@@ -79,7 +79,7 @@ class Roleselectpage extends StatelessWidget {
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => loginpage(
+                      builder: (context) => Loginpage(
                             switchbool: true,
                             db: db,
                           ))),
@@ -157,27 +157,6 @@ class Roleselectpage extends StatelessWidget {
                 ),
               ],
             ),
-            // SizedBox(
-            //   height: 20,
-            // ),
-            // GestureDetector(
-            //   onTap: () => Navigator.pushNamed(context, '/loginpage'),
-            //   child: Container(
-            //       decoration: BoxDecoration(
-            //           color: Colors.black,
-            //           borderRadius: BorderRadius.circular(15)),
-            //       child: Padding(
-            //         padding: const EdgeInsets.all(8.0),
-            //         child: Center(
-            //             child: Text(
-            //           "Get Started",
-            //           style: GoogleFonts.secularOne(
-            //               color: Colors.white,
-            //               fontWeight: FontWeight.w600,
-            //               fontSize: 21),
-            //         )),
-            //       )),
-            // )
           ],
         ),
       ),

@@ -1,10 +1,9 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
@@ -53,27 +52,27 @@ class myApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: (authResponse == "success")
-          ? pageNav(
+          ? PageNav(
               db: db,
               CurrentPageIndex: 1,
               CurrentUserId: db.user!.uid,
               SwitchValue: db.switchValue)
-          : welcomePage(db: db),
+          : WelcomePage(db: db),
       routes: {
-        '/loginpage': (context) => loginpage(
+        '/loginpage': (context) => Loginpage(
               switchbool: false,
               db: Database(),
             ),
-        '/pagenavpage': (context) => pageNav(
+        '/pagenavpage': (context) => PageNav(
               CurrentPageIndex: 1,
               CurrentUserId: "",
               SwitchValue: false,
               db: Database(),
             ),
-        '/registerpage': (context) => registerpage(
+        '/registerpage': (context) => Registerpage(
               db: Database(),
             ),
-        '/homepage': (context) => homePage(
+        '/homepage': (context) => HomePage(
               switchValue: '',
               currentUserId: '',
               db: Database(),

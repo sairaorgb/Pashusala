@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,17 +6,17 @@ import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/utils/petTile.dart';
 
-class storePage extends StatefulWidget {
+class StorePage extends StatefulWidget {
   String currentUserId;
   String switchValue;
-  storePage(
+  StorePage(
       {super.key, required this.currentUserId, required this.switchValue});
 
   @override
-  State<storePage> createState() => _storePageState();
+  State<StorePage> createState() => _StorePageState();
 }
 
-class _storePageState extends State<storePage> {
+class _StorePageState extends State<StorePage> {
   @override
   void initState() {
     super.initState();

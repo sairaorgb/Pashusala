@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last, no_leading_underscores_for_local_identifiers
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last, no_leading_underscores_for_local_identifiers, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,23 +8,22 @@ import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
 
-class homePage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   String switchValue;
   String currentUserId;
   Database db;
-  homePage(
+  HomePage(
       {super.key,
       required this.switchValue,
       required this.currentUserId,
       required this.db});
 
   @override
-  State<homePage> createState() => _homePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _homePageState extends State<homePage> {
+class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> petList = [];
-  bool _switchValue = false;
   late double latitude;
   late double longitude;
   bool isLoading = true;
@@ -84,9 +83,7 @@ class _homePageState extends State<homePage> {
   @override
   Widget build(BuildContext context) {
     String _currentUserId = widget.currentUserId;
-    if (widget.switchValue == "true") {
-      _switchValue = true;
-    }
+    if (widget.switchValue == "true") {}
 
     return Stack(
       children: [

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, must_be_immutable
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
@@ -6,15 +6,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/roleSelectPage.dart';
 
-class welcomePage extends StatefulWidget {
+class WelcomePage extends StatefulWidget {
   Database db;
-  welcomePage({super.key, required this.db});
+  WelcomePage({super.key, required this.db});
 
   @override
-  State<welcomePage> createState() => _welcomePageState();
+  State<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _welcomePageState extends State<welcomePage> {
+class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

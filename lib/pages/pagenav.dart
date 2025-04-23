@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types, sort_child_properties_last
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types, sort_child_properties_last, must_be_immutable
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +13,12 @@ import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/storePage.dart';
 import 'package:veterinary_app/utils/chatText.dart';
 
-class pageNav extends StatefulWidget {
+class PageNav extends StatefulWidget {
   Database db;
   int CurrentPageIndex;
   String CurrentUserId;
   bool SwitchValue;
-  pageNav(
+  PageNav(
       {super.key,
       required this.CurrentPageIndex,
       required this.CurrentUserId,
@@ -26,10 +26,10 @@ class pageNav extends StatefulWidget {
       required this.db});
 
   @override
-  State<pageNav> createState() => _pageNavState();
+  State<PageNav> createState() => _PageNavState();
 }
 
-class _pageNavState extends State<pageNav> {
+class _PageNavState extends State<PageNav> {
   late int currentPageIndex;
   late bool switchValue;
   late String currentUserId;
@@ -83,11 +83,11 @@ class _pageNavState extends State<pageNav> {
       }
     }
     List<Widget> pages = [
-      storePage(
+      StorePage(
         currentUserId: currentUserId,
         switchValue: switchValue.toString(),
       ),
-      homePage(
+      HomePage(
         switchValue: switchValue.toString(),
         currentUserId: currentUserId,
         db: widget.db,
@@ -166,7 +166,7 @@ class _pageNavState extends State<pageNav> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => pageNav(
+                            builder: (context) => PageNav(
                                   db: widget.db,
                                   CurrentPageIndex: 1,
                                   CurrentUserId: currentUserId,
@@ -194,7 +194,7 @@ class _pageNavState extends State<pageNav> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => pageNav(
+                            builder: (context) => PageNav(
                                   db: widget.db,
                                   CurrentPageIndex: 0,
                                   CurrentUserId: currentUserId,
@@ -222,7 +222,7 @@ class _pageNavState extends State<pageNav> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => pageNav(
+                            builder: (context) => PageNav(
                                 db: widget.db,
                                 CurrentPageIndex: 2,
                                 CurrentUserId: currentUserId,
@@ -249,7 +249,7 @@ class _pageNavState extends State<pageNav> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => pageNav(
+                            builder: (context) => PageNav(
                                 db: widget.db,
                                 CurrentPageIndex: 3,
                                 CurrentUserId: currentUserId,

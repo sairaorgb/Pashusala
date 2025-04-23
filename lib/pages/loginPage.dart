@@ -1,20 +1,19 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types, must_be_immutable
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 
-class loginpage extends StatefulWidget {
+class Loginpage extends StatefulWidget {
   bool switchbool;
   Database db;
-  loginpage({super.key, required this.switchbool, required this.db});
+  Loginpage({super.key, required this.switchbool, required this.db});
   @override
-  State<loginpage> createState() => _loginpageState();
+  State<Loginpage> createState() => _LoginpageState();
 }
 
-class _loginpageState extends State<loginpage> {
+class _LoginpageState extends State<Loginpage> {
   TextEditingController userName = TextEditingController();
   TextEditingController password = TextEditingController();
   late bool _switchValue;
@@ -27,22 +26,11 @@ class _loginpageState extends State<loginpage> {
   Future<String> authenticate(
       String role, String useremail, String password) async {
     try {
-      final credential = await FirebaseAuth.instance
+      await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: useremail, password: password);
-      var userDoc;
       final currentUser = FirebaseAuth.instance.currentUser;
-      if (role == "doctor") {
-        userDoc = await FirebaseFirestore.instance
-            .collection('doctor')
-            .doc(currentUser!.uid)
-            .get();
-      } else {
-        userDoc = await FirebaseFirestore.instance
-            .collection('user')
-            .doc(currentUser!.uid)
-            .get();
-      }
-      currentUserId = currentUser.uid;
+
+      currentUserId = currentUser!.uid;
       widget.db.updateDatabase("userEmail", useremail);
       widget.db.updateDatabase("password", password);
       widget.db.updateDatabase("role", role);
@@ -197,7 +185,7 @@ class _loginpageState extends State<loginpage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  result!,
+                                  result,
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 duration: Duration(seconds: 2),
@@ -236,7 +224,7 @@ class _loginpageState extends State<loginpage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  result!,
+                                  result,
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 duration: Duration(seconds: 2),

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 String getImagePath(String animalType, String breed) {
   // Define a map for animal types and their corresponding breeds with image paths
   const Map<String, Map<String, String>> animalImages = {

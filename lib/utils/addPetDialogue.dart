@@ -1,11 +1,8 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
-
-// ignore_for_file: prefer_const_constructors
 
 class ShowPetInfoDialog extends StatefulWidget {
   final String currentUserId;
@@ -66,7 +63,6 @@ class _DialogContent extends StatefulWidget {
 }
 
 class _DialogContentState extends State<_DialogContent> {
-  // Convert these to state variables
   String? _selectedPetType;
   String? _selectedBreed;
 
@@ -132,7 +128,6 @@ class _DialogContentState extends State<_DialogContent> {
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(labelText: 'Breed'),
                     value: _selectedBreed,
-                    // Make sure this is only enabled when a pet type is selected
                     onChanged: _selectedPetType != null
                         ? (String? value) {
                             setState(() {
@@ -140,7 +135,6 @@ class _DialogContentState extends State<_DialogContent> {
                             });
                           }
                         : null,
-                    // Only show breeds for the selected pet type
                     items: _selectedPetType != null
                         ? petTypeToBreedsMap[_selectedPetType]!
                             .map((breed) => DropdownMenuItem<String>(
@@ -150,7 +144,6 @@ class _DialogContentState extends State<_DialogContent> {
                             .toList()
                         : null,
                     hint: Text('Select Pet Type First'),
-                    // Disable the dropdown if no pet type is selected
                     disabledHint: Text('Select Pet Type First'),
                   ),
                 ],
@@ -206,15 +199,13 @@ class _DialogContentState extends State<_DialogContent> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // Collect values from text fields and dropdowns
                 String petType = _selectedPetType ?? '';
                 String breed = _selectedBreed ?? '';
-                String petName = namecontroller.text ?? '';
+                String petName = namecontroller.text;
                 int age = int.tryParse(ageController.text) ?? 0;
                 double height = double.tryParse(heightController.text) ?? 0.0;
                 double weight = double.tryParse(weightController.text) ?? 0.0;
 
-                // Save to Firebase
                 await widget.savePetDetailsToFirestore(
                   petType: petType,
                   breed: breed,
@@ -225,7 +216,6 @@ class _DialogContentState extends State<_DialogContent> {
                   userid: widget.currentUserId,
                 );
 
-                // Close the dialog
                 Navigator.of(context).pop();
                 widget.onPetAdded();
               },
