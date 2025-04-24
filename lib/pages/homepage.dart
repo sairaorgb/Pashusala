@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
@@ -23,7 +25,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> petList = [];
   late double latitude;
   late double longitude;
   bool isLoading = true;
@@ -51,16 +52,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    widget.db.addListener(onDbChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      petList = widget.db.petList;
-      fetchLocation();
-    });
-  }
 
-  void onDbChanged() {
-    setState(() {
-      petList = widget.db.petList;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchLocation();
     });
   }
 
@@ -336,12 +330,10 @@ class _HomePageState extends State<HomePage> {
                         icon: Icon(Icons.more_vert),
                         onSelected: (value) {
                           if (value == 'add_pet') {
-                            // Show the dialog when "Add New Pet" is selected
                             showDialog(
                               context: context,
                               builder: (context) => ShowPetInfoDialog(
                                 currentUserId: _currentUserId,
-                                onPetAdded: () => widget.db.petList,
                                 db: widget.db,
                               ),
                             );
@@ -358,28 +350,30 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 SizedBox(height: 20),
-                petList.isEmpty
-                    ? CircularProgressIndicator()
-                    : Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          itemCount: petList.length,
-                          itemBuilder: (context, index) {
-                            final pet = petList[index];
-                            return homePageTile(
-                              name: pet['name'] ?? "Unknown",
-                              animalType: pet['animalType'] ?? "Unknown",
-                              age: pet['age'] ?? "Unknown",
-                              height: pet['height'] ?? "Unknown",
-                              weight: pet['weight'] ?? "Unknown",
-                              breed: pet['breed'] ?? "Unknown",
-                              currentUserId: _currentUserId,
-                              status: pet['status'] ?? "Unknown",
-                              petId: pet['petId'] ?? "Unknown",
-                            );
-                          },
-                        ),
-                      ),
+                Consumer<HomepetsProvider>(builder: (context, homePets, child) {
+                  return homePets.petList.isEmpty
+                      ? CircularProgressIndicator()
+                      : Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            itemCount: homePets.petList.length,
+                            itemBuilder: (context, index) {
+                              final pet = homePets.petList[index];
+                              return homePageTile(
+                                name: pet['name'] ?? "Unknown",
+                                animalType: pet['animalType'] ?? "Unknown",
+                                age: pet['age'] ?? "Unknown",
+                                height: pet['height'] ?? "Unknown",
+                                weight: pet['weight'] ?? "Unknown",
+                                breed: pet['breed'] ?? "Unknown",
+                                currentUserId: _currentUserId,
+                                status: pet['status'] ?? "Unknown",
+                                petId: pet['petId'] ?? "Unknown",
+                              );
+                            },
+                          ),
+                        );
+                }),
               ],
             ),
           ),

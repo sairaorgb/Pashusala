@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 class CartStoreProvider extends ChangeNotifier {
-  var tempBox = Hive.box("myBox");
+  var tempBox = Hive.box('myBox');
   List<Map<String, dynamic>> petStoreList = [];
   List<Map<String, dynamic>> userWishList = [];
   late User? currentUser;
@@ -18,7 +18,11 @@ class CartStoreProvider extends ChangeNotifier {
 
     if (userWishList.isEmpty) {
       if (tempBox.containsKey('userWishList')) {
-        userWishList = tempBox.get('userWishList');
+        var rawList = tempBox.get("userWishList") as List<dynamic>? ?? [];
+        userWishList = rawList
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
       } else {
         var docsnap = await fbStoreInstance
             .collection("users_data")

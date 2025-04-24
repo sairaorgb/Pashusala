@@ -8,6 +8,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
@@ -34,7 +35,10 @@ Future<void> main() async {
   var authResponse = await db.validateUser();
 
   runApp(MultiProvider(
-    providers: [ChangeNotifierProvider(create: (_) => CartStoreProvider())],
+    providers: [
+      ChangeNotifierProvider(create: (_) => HomepetsProvider()),
+      ChangeNotifierProvider(create: (_) => CartStoreProvider())
+    ],
     child: myApp(
       db: db,
       authResponse: authResponse,

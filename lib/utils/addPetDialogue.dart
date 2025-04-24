@@ -1,18 +1,18 @@
 // ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
 class ShowPetInfoDialog extends StatefulWidget {
   final String currentUserId;
-  final VoidCallback onPetAdded;
   Database db;
 
   ShowPetInfoDialog({
     Key? key,
     required this.currentUserId,
-    required this.onPetAdded,
     required this.db,
   }) : super(key: key);
 
@@ -30,8 +30,8 @@ class _ShowPetInfoDialogState extends State<ShowPetInfoDialog> {
           width: 400,
           child: _DialogContent(
             currentUserId: widget.currentUserId,
-            onPetAdded: widget.onPetAdded,
-            savePetDetailsToFirestore: widget.db.savePetDetailsToFirestore,
+            savePetDetailsToFirestore:
+                context.read<HomepetsProvider>().savePetDetailsToFirestore,
           ),
         ),
       ),
@@ -41,7 +41,6 @@ class _ShowPetInfoDialogState extends State<ShowPetInfoDialog> {
 
 class _DialogContent extends StatefulWidget {
   final String currentUserId;
-  final VoidCallback onPetAdded;
   final Future<void> Function({
     required String petType,
     required String breed,
@@ -54,7 +53,6 @@ class _DialogContent extends StatefulWidget {
 
   _DialogContent({
     required this.currentUserId,
-    required this.onPetAdded,
     required this.savePetDetailsToFirestore,
   });
 
@@ -217,7 +215,6 @@ class _DialogContentState extends State<_DialogContent> {
                 );
 
                 Navigator.of(context).pop();
-                widget.onPetAdded();
               },
               child: Text('Save'),
             ),

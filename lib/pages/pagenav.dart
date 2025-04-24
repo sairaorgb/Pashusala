@@ -7,6 +7,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/homepage.dart';
@@ -37,7 +38,14 @@ class _PageNavState extends State<PageNav> {
   @override
   void initState() {
     super.initState();
-    widget.db.initDatabase();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<HomepetsProvider>().initDatabase();
+    // });
+    //   await context.read<HomepetsProvider>().initDatabase();
+    //   await context.read<HomepetsProvider>().initDatabase();
+    Future(() async {
+      await context.read<HomepetsProvider>().initDatabase();
+    });
     Future.microtask(() async {
       context.read<CartStoreProvider>().initCSP();
     });
