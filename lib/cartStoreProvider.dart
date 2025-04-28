@@ -186,8 +186,9 @@ class CartStoreProvider extends ChangeNotifier {
             .collection('userCart')
             .doc(petId)
             .delete();
-
-        userWishList.removeWhere((pet) => pet['petId'] == petId);
+        print(petid);
+        print(petId);
+        userWishList.removeWhere((pet) => pet['petId'] == petid);
         updateDatabase("userWishList", userWishList);
         notifyListeners();
       } else {
