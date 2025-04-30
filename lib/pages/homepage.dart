@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/homePetsProvider.dart';
-import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
 
@@ -26,17 +25,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // late double latitude;
-  // late double longitude;
-  double? homeLatitude;
-  double? homeLongitude;
-  // double? currLatitude;
-  // double? currLongitude;
+  String? selectedAddress;
 
-  String? homeAddress;
   bool isLoading = true;
   String? errorMessage;
 
+  TextEditingController label = TextEditingController();
   TextEditingController landmark = TextEditingController();
   TextEditingController town = TextEditingController();
   TextEditingController district = TextEditingController();
@@ -45,80 +39,133 @@ class _HomePageState extends State<HomePage> {
 
   bool isHomeExpanded = false;
 
-  void submitAddress() {
-    widget.db.isAddressModified = true;
-    setState(() {
-      widget.db.currLandmark = landmark.text;
-      widget.db.currTown = town.text;
-      widget.db.currDistrict = district.text;
-      widget.db.currPinCode = state.text;
-      widget.db.currPinCode = pincode.text;
-      widget.db.currAddress = "${landmark.text} ,"
-          "${town.text} ,"
-          "${district.text} ,"
-          "${state.text} ,"
-          "${pincode.text}";
-    });
-    Navigator.pop(context);
-  }
-
   @override
   void initState() {
     super.initState();
-    if (widget.db.tempBox.containsKey("homeAddress")) {
-      homeAddress = widget.db.tempBox.get("homeAddress");
-      homeLatitude = widget.db.tempBox.get("userLatitude");
-      homeLongitude = widget.db.tempBox.get("userLongitude");
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!widget.db.isAddressModified)
+      if (!context.read<HomepetsProvider>().isAddressModified) {
         await fetchLocation();
-      else {
+        changeIndexParameters('Current');
+      } else {
         setState(() {
+          changeIndexParameters(context.read<HomepetsProvider>().selectedIndex);
           isLoading = false;
         });
       }
     });
   }
 
+  Future<void> submitAddress() async {
+    context.read<HomepetsProvider>().isAddressModified = true;
+    await context.read<HomepetsProvider>().saveAddressToFirestore(
+        label: label.text,
+        landmark: landmark.text,
+        town: town.text,
+        district: district.text,
+        state: state.text,
+        pincode: pincode.text,
+        latitude: context.read<HomepetsProvider>().selectedLatitude.toString(),
+        longitude:
+            context.read<HomepetsProvider>().selectedLongitude.toString());
+
+    context.read<HomepetsProvider>().selectedIndex = label.text;
+    changeIndexParameters(label.text);
+    setState(() {
+      selectedAddress =
+          context.read<HomepetsProvider>().savedAddress[label.text]!['address'];
+    });
+    Navigator.pop(context);
+  }
+
+  void changeIndexParameters(String newLabel) {
+    label.text = newLabel;
+    context.read<HomepetsProvider>().selectedIndex = newLabel;
+    landmark.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['landmark'] ??
+            '';
+    town.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['town'] ?? '';
+    district.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['district'] ??
+            '';
+    pincode.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['pincode'] ??
+            '';
+    state.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['state'] ?? '';
+    context.read<HomepetsProvider>().selectedLatitude = int.tryParse(context
+        .read<HomepetsProvider>()
+        .savedAddress[newLabel]!['latitude']!) as double?;
+    context.read<HomepetsProvider>().selectedLongitude = int.tryParse(context
+        .read<HomepetsProvider>()
+        .savedAddress[newLabel]!['longitude']!) as double?;
+    selectedAddress =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
+  }
+
   Future<void> fetchLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition();
+
       List<Placemark> placemarks =
           await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      context.read<HomepetsProvider>().currentLatitude =
+          position.latitude.toString();
+
+      context.read<HomepetsProvider>().currentLongitude =
+          position.longitude.toString();
+
+      context.read<HomepetsProvider>().selectedLatitude = position.latitude;
+      context.read<HomepetsProvider>().selectedLongitude = position.longitude;
+
+      List addList = [];
+      String concatAddress = "";
+      String currentLandmark = "";
+      String currentTown = "";
+      String currentDistrict = "";
+      String currentPincode = "";
+      String currentState = "";
+
       Placemark place = placemarks[0]; // Get the first result
       if (!(place.name!.isNotEmpty && place.name!.contains('+'))) {
-        landmark.text = place.name!;
-        widget.db.currLandmark = place.name;
+        currentLandmark = place.name!;
+        addList.add(place.name);
       }
       if (!(place.locality!.isNotEmpty && place.locality!.contains('+'))) {
-        town.text = place.locality!;
-        widget.db.currTown = place.locality;
+        currentTown = place.locality!;
+        addList.add(place.locality);
       }
       if (!(place.postalCode!.isNotEmpty && place.postalCode!.contains('+'))) {
-        pincode.text = place.postalCode!;
-        widget.db.currPinCode = place.postalCode;
+        currentPincode = place.postalCode!;
+        addList.add(place.postalCode);
       }
       if (!(place.administrativeArea!.isNotEmpty &&
           place.administrativeArea!.contains('+'))) {
-        state.text = place.administrativeArea!;
-        widget.db.currState = place.administrativeArea;
+        currentState = place.administrativeArea!;
+        addList.add(place.administrativeArea);
       }
 
-      widget.db.currAddress = [
-        widget.db.currLandmark,
-        widget.db.currTown,
-        widget.db.currDistrict,
-        widget.db.currState,
-        widget.db.currPinCode
-      ]
+      concatAddress = addList
           .where((element) => element != null && element.trim().isNotEmpty)
           .join(', ');
 
+      context.read<HomepetsProvider>().currentAddress = concatAddress;
+      context.read<HomepetsProvider>().isAddressModified = true;
+
+      context.read<HomepetsProvider>().saveAddressToFirestore(
+          label: "Current",
+          landmark: currentLandmark,
+          district: currentDistrict,
+          town: currentTown,
+          state: currentState,
+          pincode: currentPincode,
+          latitude: context.read<HomepetsProvider>().currentLatitude.toString(),
+          longitude:
+              context.read<HomepetsProvider>().currentLongitude.toString());
       setState(() {
-        widget.db.currLatitude = position.latitude;
-        widget.db.currLongitude = position.longitude;
         isLoading = false;
+        selectedAddress = concatAddress;
       });
     } catch (e) {
       setState(() {
@@ -162,11 +209,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 12),
+                          horizontal: 8.0, vertical: 10),
                       child: Column(
                         children: [
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
                                 child: isLoading
@@ -184,29 +230,95 @@ class _HomePageState extends State<HomePage> {
                                             child: Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Icon(Icons.location_on,
-                                                    color: Colors.blue,
-                                                    size: 30),
-                                                SizedBox(
-                                                  width: 16,
-                                                ),
-                                                Expanded(
-                                                  child: Text(
-                                                    widget.db.currAddress,
-                                                    softWrap: true,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style:
-                                                        GoogleFonts.secularOne(
-                                                            fontSize: 16,
-                                                            color:
-                                                                Colors.white),
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      AddressBottomSheet.show(
+                                                          context,
+                                                          context
+                                                              .read<
+                                                                  HomepetsProvider>()
+                                                              .savedAddress,
+                                                          changeIndexParameters),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal:
+                                                                    6.0),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                                Icons
+                                                                    .location_on,
+                                                                color:
+                                                                    Colors.red,
+                                                                size: 30),
+                                                            SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            Text(
+                                                              context
+                                                                  .read<
+                                                                      HomepetsProvider>()
+                                                                  .selectedIndex,
+                                                              style: GoogleFonts
+                                                                  .secularOne(
+                                                                      fontSize:
+                                                                          22,
+                                                                      color: Colors
+                                                                          .white),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 6,
+                                                            ),
+                                                            Icon(
+                                                                Icons
+                                                                    .arrow_drop_down_outlined,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 38),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        height: 16,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 330,
+                                                        child: Expanded(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        15.0),
+                                                            child: Text(
+                                                              selectedAddress!,
+                                                              softWrap: true,
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: GoogleFonts
+                                                                  .secularOne(
+                                                                      fontSize:
+                                                                          16,
+                                                                      color: Colors
+                                                                          .white),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                                SizedBox(
-                                                  width: 10,
                                                 ),
                                               ],
                                             ),
@@ -242,6 +354,8 @@ class _HomePageState extends State<HomePage> {
                                             ),
                                           ),
                                           SizedBox(height: 10),
+                                          _buildTextField(
+                                              label, 'Address Label'),
                                           _buildTextField(landmark, 'Landmark'),
                                           _buildTextField(town, 'Town'),
                                           _buildTextField(district, 'District'),
@@ -281,229 +395,6 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6.0, vertical: 0),
-                            child: ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              shape: Border(),
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Use Home Address',
-                                    style: GoogleFonts.secularOne(
-                                      color: Colors.white, // Title text color
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        isHomeExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons
-                                                .arrow_drop_down, // Toggle arrow
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                      SizedBox(
-                                        width: 30,
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          // Your button action here
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 0,
-                                              vertical:
-                                                  0), // Even smaller button
-
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                12), // Rounded button
-                                          ),
-                                        ),
-                                        child: Text(
-                                          (widget.db.usingHomeAddress)
-                                              ? 'using'
-                                              : 'use',
-                                          style: TextStyle(
-                                            fontSize: 18, // Smaller font size
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              onExpansionChanged: (bool expanding) {
-                                setState(() {
-                                  isHomeExpanded =
-                                      expanding; // Update expansion state
-                                });
-                              },
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4.0),
-                                  child: Text(
-                                    textAlign: TextAlign.start,
-                                    homeAddress ??
-                                        "Home Address is not added yet",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6.0, vertical: 0),
-                            child: ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              shape: Border(),
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Use Current Address',
-                                    style: GoogleFonts.secularOne(
-                                      color: Colors.white, // Title text color
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        isHomeExpanded
-                                            ? Icons.arrow_drop_up
-                                            : Icons
-                                                .arrow_drop_down, // Toggle arrow
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                      SizedBox(
-                                        width: 30,
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          // Your button action here
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 0,
-                                              vertical:
-                                                  0), // Even smaller button
-
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                12), // Rounded button
-                                          ),
-                                        ),
-                                        child: Text(
-                                          widget.db.usingHomeAddress
-                                              ? 'use'
-                                              : 'using',
-                                          style: GoogleFonts.secularOne(
-                                            fontSize: 16, // Smaller font size
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              onExpansionChanged: (bool expanding) {
-                                setState(() {
-                                  isHomeExpanded =
-                                      expanding; // Update expansion state
-                                });
-                              },
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 5.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          widget.db.currAddress,
-                                          softWrap: true,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 50,
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          widget.db.setUserLocation(
-                                              widget.db.currLandmark,
-                                              widget.db.currTown,
-                                              widget.db.currDistrict,
-                                              widget.db.currState,
-                                              widget.db.currPinCode,
-                                              widget.db.currLatitude,
-                                              widget.db.currLongitude);
-                                          homeAddress = [
-                                            widget.db.currLandmark,
-                                            widget.db.currTown,
-                                            widget.db.currDistrict,
-                                            widget.db.currPinCode,
-                                            widget.db.currState,
-                                          ]
-                                              .where((element) =>
-                                                  element != null &&
-                                                  element.trim().isNotEmpty)
-                                              .join(', ');
-                                          setState(() {
-                                            homeLatitude =
-                                                widget.db.currLatitude;
-                                            homeLongitude =
-                                                widget.db.currLongitude;
-                                          });
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 2,
-                                              vertical:
-                                                  0), // Even smaller button
-
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                12), // Rounded button
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Set as Home',
-                                          style: TextStyle(
-                                            fontSize: 13, // Smaller font size
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                         ],
                       ),
@@ -646,4 +537,133 @@ Widget _buildTextField(TextEditingController mycontroller, String label,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
     ),
   );
+}
+
+class AddressBottomSheet {
+  static void show(
+      BuildContext context,
+      Map<String, Map<String, String?>> savedAddresses,
+      void Function(String) ontap) {
+    savedAddresses = savedAddresses
+      ..addAll(context.read<HomepetsProvider>().currentMap!);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          maxChildSize: 0.9,
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          builder: (context, scrollController) {
+            var indexToMark = context.read<HomepetsProvider>().selectedIndex;
+            return Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F3EB), // Light background
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                child:
+                    StatefulBuilder(builder: (context, StateSetter setState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: savedAddresses.length,
+                          itemBuilder: (context, index) {
+                            final label = savedAddresses.keys.elementAt(index);
+                            String addressString =
+                                savedAddresses[label]!['address']!;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                    0xFFF1E8D9), // Slightly darker cream
+                                border: (label == indexToMark)
+                                    ? Border.all(
+                                        color: Colors.brown,
+                                        width: 2,
+                                        style: BorderStyle.solid)
+                                    : Border.all(width: 0),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                  label,
+                                  style: GoogleFonts.secularOne(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    addressString,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    indexToMark = label;
+                                  });
+                                  // ontap(label);
+                                  // Navigator.pop(context, label);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          ontap(indexToMark);
+                          Navigator.pop(context);
+                        },
+                        child: Text('Use this Address',
+                            style: GoogleFonts.secularOne(fontSize: 18)),
+                      ),
+                    ],
+                  );
+                }));
+          },
+        );
+      },
+    );
+  }
+
+  static String _buildAddressString(Map<String, String?> fields) {
+    List<String> parts = [];
+    if (fields['Landmark'] != null && fields['Landmark']!.isNotEmpty) {
+      parts.add(fields['Landmark']!);
+    }
+    if (fields['Town'] != null && fields['Town']!.isNotEmpty) {
+      parts.add(fields['Town']!);
+    }
+    if (fields['District'] != null && fields['District']!.isNotEmpty) {
+      parts.add(fields['District']!);
+    }
+    if (fields['State'] != null && fields['State']!.isNotEmpty) {
+      parts.add(fields['State']!);
+    }
+    if (fields['Pin Code'] != null && fields['Pin Code']!.isNotEmpty) {
+      parts.add(fields['Pin Code']!);
+    }
+    return parts.join(", ");
+  }
 }

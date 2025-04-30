@@ -8,7 +8,14 @@ class CartStoreProvider extends ChangeNotifier {
   List<Map<String, dynamic>> petStoreList = [];
   List<Map<String, dynamic>> userWishList = [];
   late User? currentUser;
-  late FirebaseFirestore fbStoreInstance;
+  late FirebaseFirestore? fbStoreInstance;
+
+  void logout() {
+    petStoreList = [];
+    userWishList = [];
+    currentUser = null;
+    fbStoreInstance = null;
+  }
 
   void initCSP() async {
     currentUser = FirebaseAuth.instance.currentUser;
@@ -24,7 +31,7 @@ class CartStoreProvider extends ChangeNotifier {
             .map((item) => Map<String, dynamic>.from(item))
             .toList();
       } else {
-        var docsnap = await fbStoreInstance
+        var docsnap = await fbStoreInstance!
             .collection("users_data")
             .doc(currentUser?.uid)
             .get();

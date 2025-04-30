@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, camel_case_types, sort_child_properties_last, must_be_immutable
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -58,6 +59,9 @@ class _PageNavState extends State<PageNav> {
     var authinstance = FirebaseAuth.instance;
     try {
       widget.db.logOutUser();
+      Provider.of<HomepetsProvider>(context, listen: false).logout();
+
+      Provider.of<CartStoreProvider>(context, listen: false).logout();
       await authinstance.signOut();
       Navigator.pushNamedAndRemoveUntil(
         context,
