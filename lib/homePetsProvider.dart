@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:hive_flutter/adapters.dart';
 
 class HomepetsProvider extends ChangeNotifier {
@@ -14,8 +15,8 @@ class HomepetsProvider extends ChangeNotifier {
   String? currentTown;
   String? currentState;
   String? currentPincode;
-  String? currentLatitude;
-  String? currentLongitude;
+  double? currentLatitude;
+  double? currentLongitude;
   String? currentAddress;
   double? selectedLatitude;
   double? selectedLongitude;
@@ -23,9 +24,9 @@ class HomepetsProvider extends ChangeNotifier {
   bool isAddressModified = false;
   String selectedIndex = 'Current';
 
-  Map<String, Map<String, String>>? currentMap;
+  Map<String, Map<String, dynamic>>? currentMap;
   List<Map<String, dynamic>> petList = [];
-  Map<String, Map<String, String>> savedAddress = {};
+  Map<String, Map<String, dynamic>> savedAddress = {};
 
   void logout() {
     user = null;
@@ -44,7 +45,7 @@ class HomepetsProvider extends ChangeNotifier {
 
         savedAddress = rawMap.map((key, value) => MapEntry(
               key.toString(),
-              Map<String, String>.from(value as Map),
+              Map<String, dynamic>.from(value as Map),
             ));
       } else {
         var docsnap = await fbStoreInstance!
@@ -84,7 +85,7 @@ class HomepetsProvider extends ChangeNotifier {
     tempBox.put(key, value);
   }
 
-  Future<Map<String, Map<String, String>>?> fetchAddress(
+  Future<Map<String, Map<String, dynamic>>?> fetchAddress(
       String currentUserId) async {
     try {
       final CollectionReference addresses = fbStoreInstance!
@@ -95,12 +96,10 @@ class HomepetsProvider extends ChangeNotifier {
       final querySnapshot = await addresses.get();
       for (final doc in querySnapshot.docs) {
         final rawMap = doc.data() as Map<String, dynamic>;
-        print("sabareesh");
         final parsed = rawMap.map((key, value) {
-          print(key);
           return MapEntry(
             key.toString(),
-            Map<String, String>.from(value as Map),
+            Map<String, dynamic>.from(value as Map),
           );
         });
 
@@ -109,7 +108,7 @@ class HomepetsProvider extends ChangeNotifier {
     } catch (e) {
       print('Error fetching pets: $e');
     }
-    return null;
+    return {};
   }
 
   Future<List<Map<String, dynamic>>?> fetchPets(String currentUserId) async {
@@ -147,8 +146,8 @@ class HomepetsProvider extends ChangeNotifier {
     required String district,
     required String state,
     required String pincode,
-    required String latitude,
-    required String longitude,
+    required double latitude,
+    required double longitude,
   }) async {
     try {
       if (label == "Current") {
@@ -172,7 +171,7 @@ class HomepetsProvider extends ChangeNotifier {
             .doc(user?.uid)
             .collection('savedAddress');
 
-        Map<String, Map<String, String>> newAddress = {
+        Map<String, Map<String, dynamic>> newAddress = {
           label: {
             'landmark': landmark,
             'town': town,
@@ -186,7 +185,7 @@ class HomepetsProvider extends ChangeNotifier {
                 .join(', ')
           }
         };
-        await addresses.add(newAddress);
+        await addresses.doc(label).set(newAddress);
         savedAddress.addAll(newAddress);
         updateDatabase('savedAddress', savedAddress);
         notifyListeners();
@@ -229,4 +228,92 @@ class HomepetsProvider extends ChangeNotifier {
       print('Error saving pet details: $e');
     }
   }
+
+  Future<void> setUsedAddress(bool isDoctor) async {
+    try {
+      if (!isDoctor) {
+        var userdoc =
+            fbStoreInstance!.collection('users_data').doc(user?.uid).set({
+          'userLatitude': selectedLatitude,
+          'userLongitude': selectedLongitude,
+          "selectedIndex": selectedIndex
+        });
+      } else {
+        var doctordoc = fbStoreInstance!
+            .collection('locations')
+            .doc()
+            .collection("clinic_locations");
+
+        fbStoreInstance!.collection('doctors_data').doc(user?.uid).set({
+          'userLatitude': selectedLatitude,
+          'userLongitude': selectedLongitude,
+          "selectedIndex": selectedIndex,
+        });
+
+        final geoPoint = GeoPoint(selectedLatitude!, selectedLongitude!);
+
+        final geoFirePoint = GeoFirePoint(geoPoint);
+
+        final clinicLocations = fbStoreInstance!
+            .collection('locations')
+            .doc()
+            .collection("clinic_locations");
+
+        await clinicLocations.add({
+          'position': geoFirePoint.data,
+          'doctorUID': user!.uid,
+        });
+      }
+    } catch (e) {
+      print('Error saving pet details: $e');
+    }
+  }
+
+  // Future<List<DocumentSnapshot<Map<String, dynamic>>>>
+  //     getNearbyClinicLocations({
+  //   required double latitude,
+  //   required double longitude,
+  //   double radiusInKm = 10.0,
+  // }) async {
+  //   final center = GeoPoint(latitude, longitude);
+  //   final clinicLocations = fbStoreInstance!
+  //       .collection('locations')
+  //       .doc()
+  //       .collection("clinic_locations");
+
+  //   final query = GeoFirePlus(clinicLocations).queryWithinRadius(
+  //     center: center,
+  //     radiusInKm: radiusInKm,
+  //     field: 'position',
+  //     geopointFrom: (data) => data['position']['geopoint'],
+  //   );
+
+  //   // Get the results
+  //   final snapshots = await query.get();
+
+  //   return snapshots.docs;
+  // }
+
+  // Convert DocumentSnapshots to a list of clinic data
+//   List<Map<String, dynamic>> processClinicResults(
+//       List<DocumentSnapshot<Map<String, dynamic>>> docs, GeoPoint center) {
+//     return docs.map((doc) {
+//       final data = doc.data() as Map<String, dynamic>;
+
+//       // Extract GeoPoint data
+//       final geoPoint = data['position']['geopoint'] as GeoPoint;
+
+//       // Calculate distance manually if not provided by the query
+//       final distance = GeoFirePoint.distanceBetween(from: center, to: geoPoint);
+
+//       return {
+//         'doctorUID': data['doctorUID'],
+//         'latitude': geoPoint.latitude,
+//         'longitude': geoPoint.longitude,
+//         'distance': distance, // Distance in km
+//         'documentID': doc.id,
+//       };
+//     }).toList();
+//   }
+// }
 }

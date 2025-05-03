@@ -34,6 +34,9 @@ class _LoginpageState extends State<Loginpage> {
       widget.db.updateDatabase("userEmail", useremail);
       widget.db.updateDatabase("password", password);
       widget.db.updateDatabase("role", role);
+      if (role != "doctor") {
+        widget.db.switchValue = false;
+      }
       return ('success');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

@@ -64,9 +64,8 @@ class _HomePageState extends State<HomePage> {
         district: district.text,
         state: state.text,
         pincode: pincode.text,
-        latitude: context.read<HomepetsProvider>().selectedLatitude.toString(),
-        longitude:
-            context.read<HomepetsProvider>().selectedLongitude.toString());
+        latitude: context.read<HomepetsProvider>().selectedLatitude!,
+        longitude: context.read<HomepetsProvider>().selectedLongitude!);
 
     context.read<HomepetsProvider>().selectedIndex = label.text;
     changeIndexParameters(label.text);
@@ -78,29 +77,64 @@ class _HomePageState extends State<HomePage> {
   }
 
   void changeIndexParameters(String newLabel) {
+    context.read<HomepetsProvider>().isAddressModified = true;
     label.text = newLabel;
     context.read<HomepetsProvider>().selectedIndex = newLabel;
-    landmark.text =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['landmark'] ??
-            '';
-    town.text =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['town'] ?? '';
-    district.text =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['district'] ??
-            '';
-    pincode.text =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['pincode'] ??
-            '';
-    state.text =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['state'] ?? '';
-    context.read<HomepetsProvider>().selectedLatitude = int.tryParse(context
-        .read<HomepetsProvider>()
-        .savedAddress[newLabel]!['latitude']!) as double?;
-    context.read<HomepetsProvider>().selectedLongitude = int.tryParse(context
-        .read<HomepetsProvider>()
-        .savedAddress[newLabel]!['longitude']!) as double?;
-    selectedAddress =
-        context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
+    if (newLabel != "Current") {
+      landmark.text = context
+              .read<HomepetsProvider>()
+              .savedAddress[newLabel]!['landmark'] ??
+          '';
+      town.text =
+          context.read<HomepetsProvider>().savedAddress[newLabel]!['town'] ??
+              '';
+      district.text = context
+              .read<HomepetsProvider>()
+              .savedAddress[newLabel]!['district'] ??
+          '';
+      pincode.text =
+          context.read<HomepetsProvider>().savedAddress[newLabel]!['pincode'] ??
+              '';
+      state.text =
+          context.read<HomepetsProvider>().savedAddress[newLabel]!['state'] ??
+              '';
+      context.read<HomepetsProvider>().selectedLatitude =
+          context.read<HomepetsProvider>().savedAddress[newLabel]!['latitude']!;
+      context.read<HomepetsProvider>().selectedLongitude = context
+          .read<HomepetsProvider>()
+          .savedAddress[newLabel]!['longitude']!;
+      selectedAddress =
+          context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
+
+      context.read<HomepetsProvider>().setUsedAddress(widget.db.switchValue);
+    } else {
+      landmark.text = context
+              .read<HomepetsProvider>()
+              .currentMap!["Current"]!["landmark"] ??
+          '';
+
+      town.text =
+          context.read<HomepetsProvider>().currentMap!["Current"]!["town"] ??
+              '';
+      district.text = context
+              .read<HomepetsProvider>()
+              .currentMap!["Current"]!["district"] ??
+          '';
+      state.text =
+          context.read<HomepetsProvider>().currentMap!["Current"]!["state"] ??
+              '';
+      pincode.text =
+          context.read<HomepetsProvider>().currentMap!["Current"]!["pincode"] ??
+              '';
+      context.read<HomepetsProvider>().selectedLatitude =
+          context.read<HomepetsProvider>().currentMap![newLabel]!['latitude']!;
+      context.read<HomepetsProvider>().selectedLongitude =
+          context.read<HomepetsProvider>().currentMap![newLabel]!['longitude']!;
+      selectedAddress =
+          context.read<HomepetsProvider>().currentMap![newLabel]!['address']!;
+
+      context.read<HomepetsProvider>().setUsedAddress(widget.db.switchValue);
+    }
   }
 
   Future<void> fetchLocation() async {
@@ -110,12 +144,8 @@ class _HomePageState extends State<HomePage> {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(position.latitude, position.longitude);
 
-      context.read<HomepetsProvider>().currentLatitude =
-          position.latitude.toString();
-
-      context.read<HomepetsProvider>().currentLongitude =
-          position.longitude.toString();
-
+      context.read<HomepetsProvider>().currentLatitude = position.latitude;
+      context.read<HomepetsProvider>().currentLongitude = position.longitude;
       context.read<HomepetsProvider>().selectedLatitude = position.latitude;
       context.read<HomepetsProvider>().selectedLongitude = position.longitude;
 
@@ -151,7 +181,6 @@ class _HomePageState extends State<HomePage> {
           .join(', ');
 
       context.read<HomepetsProvider>().currentAddress = concatAddress;
-      context.read<HomepetsProvider>().isAddressModified = true;
 
       context.read<HomepetsProvider>().saveAddressToFirestore(
           label: "Current",
@@ -160,9 +189,9 @@ class _HomePageState extends State<HomePage> {
           town: currentTown,
           state: currentState,
           pincode: currentPincode,
-          latitude: context.read<HomepetsProvider>().currentLatitude.toString(),
-          longitude:
-              context.read<HomepetsProvider>().currentLongitude.toString());
+          latitude: context.read<HomepetsProvider>().selectedLatitude!,
+          longitude: context.read<HomepetsProvider>().selectedLongitude!);
+
       setState(() {
         isLoading = false;
         selectedAddress = concatAddress;
@@ -241,7 +270,9 @@ class _HomePageState extends State<HomePage> {
                                                               .read<
                                                                   HomepetsProvider>()
                                                               .savedAddress,
-                                                          changeIndexParameters),
+                                                          changeIndexParameters,
+                                                          widget
+                                                              .db.switchValue),
                                                   child: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -542,8 +573,9 @@ Widget _buildTextField(TextEditingController mycontroller, String label,
 class AddressBottomSheet {
   static void show(
       BuildContext context,
-      Map<String, Map<String, String?>> savedAddresses,
-      void Function(String) ontap) {
+      Map<String, Map<String, dynamic>> savedAddresses,
+      void Function(String) ontap,
+      bool isDoctor) {
     savedAddresses = savedAddresses
       ..addAll(context.read<HomepetsProvider>().currentMap!);
     showModalBottomSheet(
@@ -635,7 +667,10 @@ class AddressBottomSheet {
                           ontap(indexToMark);
                           Navigator.pop(context);
                         },
-                        child: Text('Use this Address',
+                        child: Text(
+                            (isDoctor)
+                                ? 'Set this as Clinic'
+                                : 'Use this Address',
                             style: GoogleFonts.secularOne(fontSize: 18)),
                       ),
                     ],

@@ -65,13 +65,13 @@ class myApp extends StatelessWidget {
       routes: {
         '/loginpage': (context) => Loginpage(
               switchbool: false,
-              db: Database(),
+              db: db,
             ),
         '/pagenavpage': (context) => PageNav(
               CurrentPageIndex: 1,
               CurrentUserId: "",
               SwitchValue: false,
-              db: Database(),
+              db: db,
             ),
         '/registerpage': (context) => Registerpage(
               db: Database(),
@@ -79,7 +79,7 @@ class myApp extends StatelessWidget {
         '/homepage': (context) => HomePage(
               switchValue: '',
               currentUserId: '',
-              db: Database(),
+              db: db,
             )
       },
       theme: ThemeData.light(),

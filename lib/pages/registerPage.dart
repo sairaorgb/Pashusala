@@ -93,6 +93,7 @@ class _RegisterpageState extends State<Registerpage> {
           'email': useremail,
           'role': "customer"
         });
+        widget.db.switchValue = false;
         widget.db.updateDatabase("userEmail", useremail);
         widget.db.updateDatabase("password", userPassword);
         widget.db.updateDatabase("role", "user");
