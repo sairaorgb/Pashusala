@@ -10,21 +10,13 @@ class HomepetsProvider extends ChangeNotifier {
   late User? user;
   late FirebaseFirestore? fbStoreInstance;
 
-  String? currentLandmark;
-  String? currentDistrict;
-  String? currentTown;
-  String? currentState;
-  String? currentPincode;
-  double? currentLatitude;
-  double? currentLongitude;
-  String? currentAddress;
   double? selectedLatitude;
   double? selectedLongitude;
 
   bool isAddressModified = false;
   String selectedIndex = 'Current';
 
-  Map<String, Map<String, dynamic>>? currentMap;
+  // Map<String, Map<String, dynamic>>? currentMap;
   List<Map<String, dynamic>> petList = [];
   Map<String, Map<String, dynamic>> savedAddress = {};
 
@@ -150,46 +142,29 @@ class HomepetsProvider extends ChangeNotifier {
     required double longitude,
   }) async {
     try {
-      if (label == "Current") {
-        currentMap = {
-          label: {
-            'landmark': landmark,
-            'town': town,
-            'district': district,
-            'pincode': pincode,
-            'state': state,
-            'latitude': latitude,
-            'longitude': longitude,
-            'address': [landmark, town, district, pincode, state]
-                .where((element) => element.trim().isNotEmpty)
-                .join(', ')
-          }
-        };
-      } else {
-        CollectionReference addresses = fbStoreInstance!
-            .collection('users_data')
-            .doc(user?.uid)
-            .collection('savedAddress');
+      CollectionReference addresses = fbStoreInstance!
+          .collection('users_data')
+          .doc(user?.uid)
+          .collection('savedAddress');
 
-        Map<String, Map<String, dynamic>> newAddress = {
-          label: {
-            'landmark': landmark,
-            'town': town,
-            'district': district,
-            'pincode': pincode,
-            'state': state,
-            'latitude': latitude,
-            'longitude': longitude,
-            'address': [landmark, town, district, pincode, state]
-                .where((element) => element.trim().isNotEmpty)
-                .join(', ')
-          }
-        };
-        await addresses.doc(label).set(newAddress);
-        savedAddress.addAll(newAddress);
-        updateDatabase('savedAddress', savedAddress);
-        notifyListeners();
-      }
+      Map<String, Map<String, dynamic>> newAddress = {
+        label: {
+          'landmark': landmark,
+          'town': town,
+          'district': district,
+          'pincode': pincode,
+          'state': state,
+          'latitude': latitude,
+          'longitude': longitude,
+          'address': [landmark, town, district, pincode, state]
+              .where((element) => element.trim().isNotEmpty)
+              .join(', ')
+        }
+      };
+      await addresses.doc(label).set(newAddress);
+      savedAddress.addAll(newAddress);
+      updateDatabase('savedAddress', savedAddress);
+      notifyListeners();
     } catch (e) {
       print('Error saving pet details: $e');
     }
@@ -233,7 +208,7 @@ class HomepetsProvider extends ChangeNotifier {
     try {
       if (!isDoctor) {
         var userdoc =
-            fbStoreInstance!.collection('users_data').doc(user?.uid).set({
+            await fbStoreInstance!.collection('users_data').doc(user?.uid).set({
           'userLatitude': selectedLatitude,
           'userLongitude': selectedLongitude,
           "selectedIndex": selectedIndex
@@ -248,7 +223,7 @@ class HomepetsProvider extends ChangeNotifier {
           'userLatitude': selectedLatitude,
           'userLongitude': selectedLongitude,
           "selectedIndex": selectedIndex,
-        });
+        }, SetOptions(merge: true));
 
         final geoPoint = GeoPoint(selectedLatitude!, selectedLongitude!);
 

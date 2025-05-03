@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.read<HomepetsProvider>().isAddressModified) {
         await fetchLocation();
-        changeIndexParameters('Current');
+        await changeIndexParameters('Current');
       } else {
         setState(() {
           changeIndexParameters(context.read<HomepetsProvider>().selectedIndex);
@@ -76,65 +76,33 @@ class _HomePageState extends State<HomePage> {
     Navigator.pop(context);
   }
 
-  void changeIndexParameters(String newLabel) {
+  Future<void> changeIndexParameters(String newLabel) async {
     context.read<HomepetsProvider>().isAddressModified = true;
     label.text = newLabel;
     context.read<HomepetsProvider>().selectedIndex = newLabel;
-    if (newLabel != "Current") {
-      landmark.text = context
-              .read<HomepetsProvider>()
-              .savedAddress[newLabel]!['landmark'] ??
-          '';
-      town.text =
-          context.read<HomepetsProvider>().savedAddress[newLabel]!['town'] ??
-              '';
-      district.text = context
-              .read<HomepetsProvider>()
-              .savedAddress[newLabel]!['district'] ??
-          '';
-      pincode.text =
-          context.read<HomepetsProvider>().savedAddress[newLabel]!['pincode'] ??
-              '';
-      state.text =
-          context.read<HomepetsProvider>().savedAddress[newLabel]!['state'] ??
-              '';
-      context.read<HomepetsProvider>().selectedLatitude =
-          context.read<HomepetsProvider>().savedAddress[newLabel]!['latitude']!;
-      context.read<HomepetsProvider>().selectedLongitude = context
-          .read<HomepetsProvider>()
-          .savedAddress[newLabel]!['longitude']!;
-      selectedAddress =
-          context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
+    landmark.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['landmark'] ??
+            '';
+    town.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['town'] ?? '';
+    district.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['district'] ??
+            '';
+    pincode.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['pincode'] ??
+            '';
+    state.text =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['state'] ?? '';
+    context.read<HomepetsProvider>().selectedLatitude =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['latitude']!;
+    context.read<HomepetsProvider>().selectedLongitude =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['longitude']!;
+    selectedAddress =
+        context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
 
-      context.read<HomepetsProvider>().setUsedAddress(widget.db.switchValue);
-    } else {
-      landmark.text = context
-              .read<HomepetsProvider>()
-              .currentMap!["Current"]!["landmark"] ??
-          '';
-
-      town.text =
-          context.read<HomepetsProvider>().currentMap!["Current"]!["town"] ??
-              '';
-      district.text = context
-              .read<HomepetsProvider>()
-              .currentMap!["Current"]!["district"] ??
-          '';
-      state.text =
-          context.read<HomepetsProvider>().currentMap!["Current"]!["state"] ??
-              '';
-      pincode.text =
-          context.read<HomepetsProvider>().currentMap!["Current"]!["pincode"] ??
-              '';
-      context.read<HomepetsProvider>().selectedLatitude =
-          context.read<HomepetsProvider>().currentMap![newLabel]!['latitude']!;
-      context.read<HomepetsProvider>().selectedLongitude =
-          context.read<HomepetsProvider>().currentMap![newLabel]!['longitude']!;
-      selectedAddress =
-          context.read<HomepetsProvider>().currentMap![newLabel]!['address']!;
-
-      context.read<HomepetsProvider>().setUsedAddress(widget.db.switchValue);
-    }
+    await context
+        .read<HomepetsProvider>()
+        .setUsedAddress(widget.db.switchValue);
   }
 
   Future<void> fetchLocation() async {
@@ -144,8 +112,6 @@ class _HomePageState extends State<HomePage> {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(position.latitude, position.longitude);
 
-      context.read<HomepetsProvider>().currentLatitude = position.latitude;
-      context.read<HomepetsProvider>().currentLongitude = position.longitude;
       context.read<HomepetsProvider>().selectedLatitude = position.latitude;
       context.read<HomepetsProvider>().selectedLongitude = position.longitude;
 
@@ -180,7 +146,7 @@ class _HomePageState extends State<HomePage> {
           .where((element) => element != null && element.trim().isNotEmpty)
           .join(', ');
 
-      context.read<HomepetsProvider>().currentAddress = concatAddress;
+      // context.read<HomepetsProvider>().currentAddress = concatAddress;
 
       context.read<HomepetsProvider>().saveAddressToFirestore(
           label: "Current",
@@ -576,8 +542,8 @@ class AddressBottomSheet {
       Map<String, Map<String, dynamic>> savedAddresses,
       void Function(String) ontap,
       bool isDoctor) {
-    savedAddresses = savedAddresses
-      ..addAll(context.read<HomepetsProvider>().currentMap!);
+    savedAddresses = savedAddresses;
+    // ..addAll(context.read<HomepetsProvider>().currentMap!);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
