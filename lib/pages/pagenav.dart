@@ -44,6 +44,7 @@ class _PageNavState extends State<PageNav> {
     //   await context.read<HomepetsProvider>().initDatabase();
     //   await context.read<HomepetsProvider>().initDatabase();
     Future(() async {
+      context.read<HomepetsProvider>().isDoctor = widget.SwitchValue;
       await context.read<HomepetsProvider>().initDatabase();
     });
     Future.microtask(() async {

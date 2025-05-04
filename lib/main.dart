@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
+import 'package:veterinary_app/clinicLocationProvider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/homepage.dart';
@@ -37,7 +38,8 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => HomepetsProvider()),
-      ChangeNotifierProvider(create: (_) => CartStoreProvider())
+      ChangeNotifierProvider(create: (_) => CartStoreProvider()),
+      ChangeNotifierProvider(create: (_) => Cliniclocationprovider())
     ],
     child: myApp(
       db: db,

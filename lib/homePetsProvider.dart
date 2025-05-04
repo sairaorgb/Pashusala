@@ -14,7 +14,8 @@ class HomepetsProvider extends ChangeNotifier {
   double? selectedLongitude;
 
   bool isAddressModified = false;
-  String selectedIndex = 'Current';
+  late bool isDoctor;
+  late String selectedIndex = "Current";
 
   // Map<String, Map<String, dynamic>>? currentMap;
   List<Map<String, dynamic>> petList = [];
@@ -30,24 +31,38 @@ class HomepetsProvider extends ChangeNotifier {
   Future<void> initDatabase() async {
     user = FirebaseAuth.instance.currentUser;
     fbStoreInstance = FirebaseFirestore.instance;
+
     if (savedAddress.isEmpty) {
       if (tempBox.containsKey('savedAddress')) {
         final rawMap =
             tempBox.get("savedAddress") as Map<dynamic, dynamic>? ?? {};
+        selectedIndex = tempBox.get("selectedIndex");
 
         savedAddress = rawMap.map((key, value) => MapEntry(
               key.toString(),
               Map<String, dynamic>.from(value as Map),
             ));
       } else {
-        var docsnap = await fbStoreInstance!
-            .collection("users_data")
-            .doc(user?.uid)
-            .get();
-        if (!docsnap.exists) tempBox.put("savedAddress", []);
-        if (docsnap.exists) {
-          savedAddress = (await fetchAddress(user!.uid)) ?? {};
-          updateDatabase("savedAddress", savedAddress);
+        if (!isDoctor) {
+          var docsnap = await fbStoreInstance!
+              .collection("users_data")
+              .doc(user?.uid)
+              .get();
+          if (!docsnap.exists) tempBox.put("savedAddress", []);
+          if (docsnap.exists) {
+            savedAddress = (await fetchAddress(user!.uid)) ?? {};
+            updateDatabase("savedAddress", savedAddress);
+          }
+        } else {
+          var docsnap = await fbStoreInstance!
+              .collection("doctors_data")
+              .doc(user?.uid)
+              .get();
+          if (!docsnap.exists) tempBox.put("savedAddress", []);
+          if (docsnap.exists) {
+            savedAddress = (await fetchAddress(user!.uid)) ?? {};
+            updateDatabase("savedAddress", savedAddress);
+          }
         }
       }
     }
@@ -79,29 +94,64 @@ class HomepetsProvider extends ChangeNotifier {
 
   Future<Map<String, Map<String, dynamic>>?> fetchAddress(
       String currentUserId) async {
-    try {
-      final CollectionReference addresses = fbStoreInstance!
-          .collection('users_data')
-          .doc(user?.uid)
-          .collection('savedAddress');
+    if (isDoctor) {
+      try {
+        final CollectionReference addresses = fbStoreInstance!
+            .collection('doctors_data')
+            .doc(user?.uid)
+            .collection('savedAddress');
 
-      final querySnapshot = await addresses.get();
-      Map<String, Map<String, dynamic>> parsed = {};
-      for (final doc in querySnapshot.docs) {
-        final rawMap = doc.data() as Map<String, dynamic>;
-        final mapped = rawMap.map((key, value) {
-          return MapEntry(
-            key.toString(),
-            Map<String, dynamic>.from(value as Map),
-          );
-        });
-        parsed.addAll(mapped);
+        final docSnapshot = await fbStoreInstance!
+            .collection('doctors_data')
+            .doc(user?.uid)
+            .get();
+
+        final data = docSnapshot.data();
+        if (data!.containsKey('selectedIndex')) {
+          selectedIndex = data['selectedIndex'] as String;
+        }
+
+        final querySnapshot = await addresses.get();
+        Map<String, Map<String, dynamic>> parsed = {};
+        for (final doc in querySnapshot.docs) {
+          final rawMap = doc.data() as Map<String, dynamic>;
+          final mapped = rawMap.map((key, value) {
+            return MapEntry(
+              key.toString(),
+              Map<String, dynamic>.from(value as Map),
+            );
+          });
+          parsed.addAll(mapped);
+        }
+        return parsed;
+      } catch (e) {
+        print('Error fetching pets: $e');
       }
-      return parsed;
-    } catch (e) {
-      print('Error fetching pets: $e');
+    } else {
+      try {
+        final CollectionReference addresses = fbStoreInstance!
+            .collection('users_data')
+            .doc(user?.uid)
+            .collection('savedAddress');
+
+        final querySnapshot = await addresses.get();
+        Map<String, Map<String, dynamic>> parsed = {};
+        for (final doc in querySnapshot.docs) {
+          final rawMap = doc.data() as Map<String, dynamic>;
+          final mapped = rawMap.map((key, value) {
+            return MapEntry(
+              key.toString(),
+              Map<String, dynamic>.from(value as Map),
+            );
+          });
+          parsed.addAll(mapped);
+        }
+        return parsed;
+      } catch (e) {
+        print('Error fetching pets: $e');
+      }
     }
-    return {};
+    return null;
   }
 
   Future<List<Map<String, dynamic>>?> fetchPets(String currentUserId) async {
@@ -142,32 +192,62 @@ class HomepetsProvider extends ChangeNotifier {
     required double latitude,
     required double longitude,
   }) async {
-    try {
-      CollectionReference addresses = fbStoreInstance!
-          .collection('users_data')
-          .doc(user?.uid)
-          .collection('savedAddress');
+    if (!isDoctor) {
+      try {
+        CollectionReference addresses = fbStoreInstance!
+            .collection('users_data')
+            .doc(user?.uid)
+            .collection('savedAddress');
 
-      Map<String, Map<String, dynamic>> newAddress = {
-        label: {
-          'landmark': landmark,
-          'town': town,
-          'district': district,
-          'pincode': pincode,
-          'state': state,
-          'latitude': latitude,
-          'longitude': longitude,
-          'address': [landmark, town, district, pincode, state]
-              .where((element) => element.trim().isNotEmpty)
-              .join(', ')
-        }
-      };
-      await addresses.doc(label).set(newAddress);
-      savedAddress.addAll(newAddress);
-      updateDatabase('savedAddress', savedAddress);
-      notifyListeners();
-    } catch (e) {
-      print('Error saving pet details: $e');
+        Map<String, Map<String, dynamic>> newAddress = {
+          label: {
+            'landmark': landmark,
+            'town': town,
+            'district': district,
+            'pincode': pincode,
+            'state': state,
+            'latitude': latitude,
+            'longitude': longitude,
+            'address': [landmark, town, district, pincode, state]
+                .where((element) => element.trim().isNotEmpty)
+                .join(', ')
+          }
+        };
+        await addresses.doc(label).set(newAddress);
+        savedAddress.addAll(newAddress);
+        updateDatabase('savedAddress', savedAddress);
+        notifyListeners();
+      } catch (e) {
+        print('Error saving pet details: $e');
+      }
+    } else {
+      try {
+        var creferenece =
+            fbStoreInstance!.collection('doctors_data').doc(user?.uid);
+
+        var addresses = creferenece.collection('savedAddress');
+
+        Map<String, Map<String, dynamic>> newAddress = {
+          label: {
+            'landmark': landmark,
+            'town': town,
+            'district': district,
+            'pincode': pincode,
+            'state': state,
+            'latitude': latitude,
+            'longitude': longitude,
+            'address': [landmark, town, district, pincode, state]
+                .where((element) => element.trim().isNotEmpty)
+                .join(', ')
+          }
+        };
+        await addresses.doc(label).set(newAddress);
+        savedAddress.addAll(newAddress);
+        updateDatabase('savedAddress', savedAddress);
+        notifyListeners();
+      } catch (e) {
+        print('Error saving pet details: $e');
+      }
     }
   }
 
@@ -205,7 +285,7 @@ class HomepetsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> setUsedAddress(bool isDoctor) async {
+  Future<void> setUsedAddress() async {
     try {
       if (!isDoctor) {
         var userdoc =
@@ -213,83 +293,30 @@ class HomepetsProvider extends ChangeNotifier {
           'userLatitude': selectedLatitude,
           'userLongitude': selectedLongitude,
           "selectedIndex": selectedIndex
-        });
+        }, SetOptions(merge: true));
       } else {
-        var doctordoc = fbStoreInstance!
-            .collection('locations')
-            .doc()
-            .collection("clinic_locations");
-
-        fbStoreInstance!.collection('doctors_data').doc(user?.uid).set({
+        await fbStoreInstance!.collection('doctors_data').doc(user?.uid).set({
           'userLatitude': selectedLatitude,
           'userLongitude': selectedLongitude,
           "selectedIndex": selectedIndex,
         }, SetOptions(merge: true));
 
         final geoPoint = GeoPoint(selectedLatitude!, selectedLongitude!);
-
         final geoFirePoint = GeoFirePoint(geoPoint);
 
-        final clinicLocations = fbStoreInstance!
+        final clinicLocations = await fbStoreInstance!
             .collection('locations')
-            .doc()
-            .collection("clinic_locations");
+            .doc("clinicLocations")
+            .collection("clinic_locations")
+            .doc(user?.uid);
 
-        await clinicLocations.add({
-          'position': geoFirePoint.data,
-          'doctorUID': user!.uid,
+        await clinicLocations.set(<String, dynamic>{
+          'geo': geoFirePoint.data,
+          'doctorID': user!.uid,
         });
       }
     } catch (e) {
       print('Error saving pet details: $e');
     }
   }
-
-  // Future<List<DocumentSnapshot<Map<String, dynamic>>>>
-  //     getNearbyClinicLocations({
-  //   required double latitude,
-  //   required double longitude,
-  //   double radiusInKm = 10.0,
-  // }) async {
-  //   final center = GeoPoint(latitude, longitude);
-  //   final clinicLocations = fbStoreInstance!
-  //       .collection('locations')
-  //       .doc()
-  //       .collection("clinic_locations");
-
-  //   final query = GeoFirePlus(clinicLocations).queryWithinRadius(
-  //     center: center,
-  //     radiusInKm: radiusInKm,
-  //     field: 'position',
-  //     geopointFrom: (data) => data['position']['geopoint'],
-  //   );
-
-  //   // Get the results
-  //   final snapshots = await query.get();
-
-  //   return snapshots.docs;
-  // }
-
-  // Convert DocumentSnapshots to a list of clinic data
-//   List<Map<String, dynamic>> processClinicResults(
-//       List<DocumentSnapshot<Map<String, dynamic>>> docs, GeoPoint center) {
-//     return docs.map((doc) {
-//       final data = doc.data() as Map<String, dynamic>;
-
-//       // Extract GeoPoint data
-//       final geoPoint = data['position']['geopoint'] as GeoPoint;
-
-//       // Calculate distance manually if not provided by the query
-//       final distance = GeoFirePoint.distanceBetween(from: center, to: geoPoint);
-
-//       return {
-//         'doctorUID': data['doctorUID'],
-//         'latitude': geoPoint.latitude,
-//         'longitude': geoPoint.longitude,
-//         'distance': distance, // Distance in km
-//         'documentID': doc.id,
-//       };
-//     }).toList();
-//   }
-// }
 }

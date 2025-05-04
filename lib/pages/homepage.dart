@@ -5,8 +5,10 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:veterinary_app/clinicLocationProvider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/homePetsProvider.dart';
+import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
 
@@ -45,7 +47,12 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.read<HomepetsProvider>().isAddressModified) {
         await fetchLocation();
-        await changeIndexParameters('Current');
+        if (!widget.db.switchValue) {
+          await changeIndexParameters('Current');
+        } else {
+          await changeIndexParameters(
+              context.read<HomepetsProvider>().selectedIndex);
+        }
       } else {
         setState(() {
           changeIndexParameters(context.read<HomepetsProvider>().selectedIndex);
@@ -76,9 +83,11 @@ class _HomePageState extends State<HomePage> {
     Navigator.pop(context);
   }
 
+  // modifies controllers ,selected variables and triggers cloud change
   Future<void> changeIndexParameters(String newLabel) async {
     context.read<HomepetsProvider>().isAddressModified = true;
     label.text = newLabel;
+    context.read<HomepetsProvider>().tempBox.put("selectedIndex", newLabel);
     context.read<HomepetsProvider>().selectedIndex = newLabel;
     landmark.text =
         context.read<HomepetsProvider>().savedAddress[newLabel]!['landmark'] ??
@@ -100,9 +109,7 @@ class _HomePageState extends State<HomePage> {
     selectedAddress =
         context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
 
-    await context
-        .read<HomepetsProvider>()
-        .setUsedAddress(widget.db.switchValue);
+    await context.read<HomepetsProvider>().setUsedAddress();
   }
 
   Future<void> fetchLocation() async {
@@ -149,14 +156,15 @@ class _HomePageState extends State<HomePage> {
       // context.read<HomepetsProvider>().currentAddress = concatAddress;
 
       await context.read<HomepetsProvider>().saveAddressToFirestore(
-          label: "Current",
-          landmark: currentLandmark,
-          district: currentDistrict,
-          town: currentTown,
-          state: currentState,
-          pincode: currentPincode,
-          latitude: context.read<HomepetsProvider>().selectedLatitude!,
-          longitude: context.read<HomepetsProvider>().selectedLongitude!);
+            label: "Current",
+            landmark: currentLandmark,
+            district: currentDistrict,
+            town: currentTown,
+            state: currentState,
+            pincode: currentPincode,
+            latitude: context.read<HomepetsProvider>().selectedLatitude!,
+            longitude: context.read<HomepetsProvider>().selectedLongitude!,
+          );
 
       setState(() {
         isLoading = false;
@@ -401,86 +409,113 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(
                   height: 8,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 13.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Color.fromRGBO(16, 42, 66, 1),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Center(
-                            child: Text(
-                              "Nearby Doctors  📍",
-                              style: GoogleFonts.secularOne(
-                                  fontSize: 18, color: Colors.white),
+                if (!widget.db.switchValue)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 13.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            var lat = context
+                                .read<HomepetsProvider>()
+                                .selectedLatitude!;
+                            var long = context
+                                .read<HomepetsProvider>()
+                                .selectedLongitude!;
+                            print(lat);
+                            print(long);
+                            await context
+                                .read<Cliniclocationprovider>()
+                                .fetchNearbyClinics(lat, long);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Mappage(
+                                      userLatitude: lat, userLongitude: long),
+                                ));
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color.fromRGBO(16, 42, 66, 1),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20))),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Center(
+                                child: Text(
+                                  "Nearby Doctors  📍",
+                                  style: GoogleFonts.secularOne(
+                                      fontSize: 18, color: Colors.white),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Color.fromRGBO(16, 42, 66, 1),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Center(
-                            child: Text(
-                              "Emergency service  🚨",
-                              style: GoogleFonts.secularOne(
-                                  fontSize: 18, color: Colors.white),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Color.fromRGBO(16, 42, 66, 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20))),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Center(
+                              child: Text(
+                                "Emergency service  🚨",
+                                style: GoogleFonts.secularOne(
+                                    fontSize: 18, color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 SizedBox(
                   height: 10,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                if (!widget.db.switchValue)
+                  Column(
                     children: [
-                      // "My Pets" text on the left
-                      Text(
-                        "My Pets",
-                        style: GoogleFonts.sahitya(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      // Three dots (more_vert icon) on the right
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert),
-                        onSelected: (value) {
-                          if (value == 'add_pet') {
-                            showDialog(
-                              context: context,
-                              builder: (context) => ShowPetInfoDialog(
-                                currentUserId: _currentUserId,
-                                db: widget.db,
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // "My Pets" text on the left
+                            Text(
+                              "My Pets",
+                              style: GoogleFonts.sahitya(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'add_pet',
-                            child: Text("Add New Pet"),
-                          ),
-                        ],
+                            ),
+                            // Three dots (more_vert icon) on the right
+                            PopupMenuButton<String>(
+                              icon: Icon(Icons.more_vert),
+                              onSelected: (value) {
+                                if (value == 'add_pet') {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => ShowPetInfoDialog(
+                                      currentUserId: _currentUserId,
+                                      db: widget.db,
+                                    ),
+                                  );
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'add_pet',
+                                  child: Text("Add New Pet"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
                 SizedBox(height: 20),
                 Consumer<HomepetsProvider>(builder: (context, homePets, child) {
                   return homePets.petList.isEmpty
