@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage> {
 
       // context.read<HomepetsProvider>().currentAddress = concatAddress;
 
-      context.read<HomepetsProvider>().saveAddressToFirestore(
+      await context.read<HomepetsProvider>().saveAddressToFirestore(
           label: "Current",
           landmark: currentLandmark,
           district: currentDistrict,

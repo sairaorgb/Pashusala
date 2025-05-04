@@ -86,17 +86,18 @@ class HomepetsProvider extends ChangeNotifier {
           .collection('savedAddress');
 
       final querySnapshot = await addresses.get();
+      Map<String, Map<String, dynamic>> parsed = {};
       for (final doc in querySnapshot.docs) {
         final rawMap = doc.data() as Map<String, dynamic>;
-        final parsed = rawMap.map((key, value) {
+        final mapped = rawMap.map((key, value) {
           return MapEntry(
             key.toString(),
             Map<String, dynamic>.from(value as Map),
           );
         });
-
-        return parsed;
+        parsed.addAll(mapped);
       }
+      return parsed;
     } catch (e) {
       print('Error fetching pets: $e');
     }

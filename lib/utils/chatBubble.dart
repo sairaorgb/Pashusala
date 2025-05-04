@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/services/chatService.dart';
 import 'package:veterinary_app/utils/chatText.dart';
@@ -224,17 +225,16 @@ class ChatBubble extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
-                          height: 300,
-                          child: Image.network(
-                            data["imagePath"],
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return CircularProgressIndicator();
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.error);
-                            },
-                          )),
+                        height: 300,
+                        child: CachedNetworkImage(
+                          imageUrl: data["imagePath"],
+                          placeholder: (context, url) =>
+                              CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
           ],
