@@ -23,33 +23,34 @@ class _LoginpageState extends State<Loginpage> {
     _switchValue = widget.switchbool;
   }
 
-  Future<String> authenticate(
-      String role, String useremail, String password) async {
-    try {
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: useremail, password: password);
-      final currentUser = FirebaseAuth.instance.currentUser;
+  // Future<String> authenticate(
+  //     String role, String useremail, String password) async {
+  //   try {
+  //     await FirebaseAuth.instance
+  //         .signInWithEmailAndPassword(email: useremail, password: password);
+  //     final currentUser = FirebaseAuth.instance.currentUser;
 
-      currentUserId = currentUser!.uid;
-      widget.db.updateDatabase("userEmail", useremail);
-      widget.db.updateDatabase("password", password);
-      widget.db.updateDatabase("role", role);
-      if (role != "doctor") {
-        widget.db.switchValue = false;
-      }
-      return ('success');
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        return ('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        return ('Wrong password provided for that user.');
-      } else {
-        return ('incorrect credentials');
-      }
-    } catch (e) {
-      return ('Error: $e');
-    }
-  }
+  //     currentUserId = currentUser!.uid;
+  //     widget.db.updateDatabase("userEmail", useremail);
+  //     widget.db.updateDatabase("password", password);
+  //     widget.db.updateDatabase("role", role);
+
+  //     if (role != "doctor") {
+  //       widget.db.switchValue = false;
+  //     }
+  //     return ('success');
+  //   } on FirebaseAuthException catch (e) {
+  //     if (e.code == 'user-not-found') {
+  //       return ('No user found for that email.');
+  //     } else if (e.code == 'wrong-password') {
+  //       return ('Wrong password provided for that user.');
+  //     } else {
+  //       return ('incorrect credentials');
+  //     }
+  //   } catch (e) {
+  //     return ('Error: $e');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -171,9 +172,11 @@ class _LoginpageState extends State<Loginpage> {
                             ),
                           );
                         } else {
-                          var result = await authenticate(
+                          var result = await widget.db.authenticate(
                               "doctor", userName.text, password.text);
                           if (result == 'success') {
+                            currentUserId =
+                                FirebaseAuth.instance.currentUser!.uid;
                             userName.clear();
                             password.clear();
                             Navigator.pushNamed(
@@ -210,9 +213,11 @@ class _LoginpageState extends State<Loginpage> {
                             ),
                           );
                         } else {
-                          var result = await authenticate(
+                          var result = await widget.db.authenticate(
                               "user", userName.text, password.text);
                           if (result == 'success') {
+                            currentUserId =
+                                FirebaseAuth.instance.currentUser!.uid;
                             userName.clear();
                             password.clear();
                             Navigator.pushNamed(

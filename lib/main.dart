@@ -37,6 +37,7 @@ Future<void> main() async {
 
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider(create: (_) => Database()),
       ChangeNotifierProvider(create: (_) => HomepetsProvider()),
       ChangeNotifierProvider(create: (_) => CartStoreProvider()),
       ChangeNotifierProvider(create: (_) => Cliniclocationprovider())

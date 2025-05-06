@@ -1,10 +1,13 @@
-import 'dart:async';
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:veterinary_app/clinicLocationProvider.dart';
+import 'package:veterinary_app/pages/soloChat.dart';
 
 class Mappage extends StatefulWidget {
   final double userLatitude;
@@ -21,6 +24,11 @@ class _MappageState extends State<Mappage> {
   late double centerLongitude;
   LatLng? selectedMarkerPosition;
   DocumentSnapshot? selectedClinic;
+
+  String? doctorName;
+  late String doctorId;
+  late GeoPoint geoPoint;
+  bool hoverDoctor = false;
 
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
@@ -55,9 +63,110 @@ class _MappageState extends State<Mappage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: (hoverDoctor)
+          ? AppBar(
+              backgroundColor:
+                  const Color.fromARGB(255, 130, 163, 94), // Sage green
+              automaticallyImplyLeading: false,
+              toolbarHeight: 140,
+              titleSpacing: 0,
+              title: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
+                child: Row(
+                  children: [
+                    // Asset image as leading widget
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/greenuserdp.jpg',
+                        height: 60,
+                        width: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Center part (Doctor name + subtitle)
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            doctorName!,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Veterinary Specialist',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Three buttons at the end
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () async {
+                            final String googleMapsUrl =
+                                "https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${geoPoint.latitude},${geoPoint.longitude}";
+                            await canLaunchUrl(Uri.parse(googleMapsUrl))
+                                ? launchUrl(Uri.parse(googleMapsUrl))
+                                : throw 'Could not launch Google Maps';
+                          },
+                          icon: const Icon(Icons.navigation),
+                          color: Colors.white,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                    receiverName: doctorName!,
+                                    receiverID: doctorId,
+                                    switchValue: "true",
+                                    recieverRole: "doctor"),
+                              )),
+                          icon: const Icon(Icons.chat_bubble_outline),
+                          color: Colors.white,
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Book Now',
+                            style: TextStyle(
+                              color: Color(0xFF9CAF88),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : AppBar(),
       body: Stack(children: [
         GoogleMap(
           mapType: MapType.normal,
+          mapToolbarEnabled: false,
           initialCameraPosition: _initialPosition,
           onMapCreated: (GoogleMapController controller) {
             _controller.complete(controller);
@@ -69,11 +178,15 @@ class _MappageState extends State<Mappage> {
               icon: BitmapDescriptor.defaultMarkerWithHue(
                   BitmapDescriptor.hueBlue),
               infoWindow: InfoWindow(title: "Your Location"),
+              onTap: () => setState(() {
+                selectedClinic = null;
+              }),
             ),
             ...clinics.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
-              final geoPoint = data['geo']['geopoint'] as GeoPoint;
-              final doctorId = data['doctorID'] ?? 'Unknown Doctor';
+              geoPoint = data['geo']['geopoint'] as GeoPoint;
+              doctorId = data['doctorID'] ?? 'Unknown Doctor';
+              doctorName = data['doctorName'] ?? 'Unknown Doctor';
 
               return Marker(
                 markerId: MarkerId(doctorId),
@@ -82,6 +195,7 @@ class _MappageState extends State<Mappage> {
                     BitmapDescriptor.hueRed),
                 onTap: () {
                   setState(() {
+                    hoverDoctor = true;
                     selectedMarkerPosition =
                         LatLng(geoPoint.latitude, geoPoint.longitude);
                     selectedClinic = doc;
@@ -91,49 +205,48 @@ class _MappageState extends State<Mappage> {
             }),
           }.toSet(),
         ),
-        if (selectedMarkerPosition != null && selectedClinic != null)
-          Positioned(
-            bottom: 80,
-            left: 20,
-            right: 20,
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/greenuserdp.jpg',
-                      height: 50,
-                      width: 50,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            // selectedClinic!['clinicName'] ??
-                            'Doctor',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text("Distance: 3.2 km"),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // open chat screen
-                      },
-                      child: Text("Chat"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
+        // Positioned(
+        //   bottom: 80,
+        //   left: 20,
+        //   right: 20,
+        //   child: Card(
+        //     elevation: 8,
+        //     shape:
+        //         RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        //     child: Padding(
+        //       padding: const EdgeInsets.all(12.0),
+        //       child: Row(
+        //         children: [
+        //           Image.asset(
+        //             'assets/images/greenuserdp.jpg',
+        //             height: 50,
+        //             width: 50,
+        //           ),
+        //           const SizedBox(width: 10),
+        //           Expanded(
+        //             child: Column(
+        //               crossAxisAlignment: CrossAxisAlignment.start,
+        //               children: [
+        //                 Text(
+        //                   // selectedClinic!['clinicName'] ??
+        //                   'Doctor',
+        //                   style: TextStyle(fontWeight: FontWeight.bold),
+        //                 ),
+        //                 Text("Distance: 3.2 km"),
+        //               ],
+        //             ),
+        //           ),
+        //           ElevatedButton(
+        //             onPressed: () {
+        //               // open chat screen
+        //             },
+        //             child: Text("Chat"),
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        // )
       ]),
       // floatingActionButton: FloatingActionButton.extended(
       //   onPressed: _goToCloseUp,

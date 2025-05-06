@@ -12,7 +12,7 @@ import 'package:veterinary_app/utils/chatTextField.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverName;
-  final String receiverEmail;
+
   final String receiverID;
   final String switchValue;
   final String recieverRole;
@@ -20,7 +20,6 @@ class ChatPage extends StatefulWidget {
   ChatPage({
     super.key,
     required this.receiverName,
-    required this.receiverEmail,
     required this.receiverID,
     required this.switchValue,
     required this.recieverRole,

@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
-class Database {
+class Database with ChangeNotifier {
   var tempBox = Hive.box('myBox');
 
   late String userEmail;
   late String password;
+  late String userName;
   late String role;
   bool switchValue = true;
 
@@ -37,6 +39,27 @@ class Database {
     try {
       var credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: useremail, password: password);
+
+      user = FirebaseAuth.instance.currentUser;
+
+      var docSnapshot;
+      if (role == "doctor") {
+        docSnapshot = await FirebaseFirestore.instance
+            .collection('doctors_data')
+            .doc(user?.uid)
+            .get();
+
+        userName = (docSnapshot.data()?['doctorName'] as String?) ?? '';
+        updateDatabase("userName", userName);
+      } else {
+        docSnapshot = await FirebaseFirestore.instance
+            .collection('users_data')
+            .doc(user?.uid)
+            .get();
+
+        userName = (docSnapshot.data()?['userName'] as String?) ?? '';
+        updateDatabase("userName", userName);
+      }
 
       if (credential.user!.uid.isNotEmpty) return ('success');
     } on FirebaseAuthException catch (e) {

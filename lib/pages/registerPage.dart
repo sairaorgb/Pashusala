@@ -54,6 +54,7 @@ class _RegisterpageState extends State<Registerpage> {
         widget.db.updateDatabase("userEmail", doctoremail);
         widget.db.updateDatabase("password", doctorpassword);
         widget.db.updateDatabase("role", "doctor");
+        widget.db.updateDatabase("userName", doctorname);
         return (user.uid);
       } else {
         return ("failure");
@@ -97,6 +98,7 @@ class _RegisterpageState extends State<Registerpage> {
         widget.db.updateDatabase("userEmail", useremail);
         widget.db.updateDatabase("password", userPassword);
         widget.db.updateDatabase("role", "user");
+        widget.db.updateDatabase("userName", username);
         return (user.uid);
       } else {
         return ("failure");

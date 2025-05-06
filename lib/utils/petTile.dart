@@ -182,7 +182,6 @@ class _petTileState extends State<petTile> {
                           switchValue: widget.switchValue,
                           recieverRole: "customer",
                           receiverName: widget.ownerName,
-                          receiverEmail: widget.ownerEmail,
                           receiverID: widget.ownerId),
                     ),
                   ),

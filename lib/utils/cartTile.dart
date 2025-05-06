@@ -112,7 +112,6 @@ class CartTile extends StatelessWidget {
                                 switchValue: switchValue,
                                 recieverRole: "customer",
                                 receiverName: ownerName,
-                                receiverEmail: ownerEmail,
                                 receiverID: ownerId,
                               ),
                             ),

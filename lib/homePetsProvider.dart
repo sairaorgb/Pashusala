@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:veterinary_app/database.dart';
 
 class HomepetsProvider extends ChangeNotifier {
   var tempBox = Hive.box('myBox');
@@ -313,6 +314,8 @@ class HomepetsProvider extends ChangeNotifier {
         await clinicLocations.set(<String, dynamic>{
           'geo': geoFirePoint.data,
           'doctorID': user!.uid,
+          'doctorName': tempBox.get('userName'),
+          // "doctorName":
         });
       }
     } catch (e) {

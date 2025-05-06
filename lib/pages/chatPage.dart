@@ -121,7 +121,6 @@ class chatModule extends StatelessWidget {
               builder: (context) => ChatPage(
                 switchValue: switchValue,
                 receiverName: userData["name"],
-                receiverEmail: userData["email"],
                 receiverID: userData["uid"],
                 recieverRole: userData['role'],
               ),
