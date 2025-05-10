@@ -9,6 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:veterinary_app/services/chatService.dart';
 import 'package:veterinary_app/utils/chatBubble.dart';
 import 'package:veterinary_app/utils/chatTextField.dart';
+import 'package:veterinary_app/utils/slotBoolkingDialogue.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverName;
@@ -145,6 +149,66 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
+          actions: widget.recieverRole == "doctor"
+              ? [
+                  IconButton(
+                    icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.tertiary),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.calendar_today),
+                                title: Text('Book Appointment'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return BookingDialog(
+                                        items: [],
+                                        doctorName: widget.receiverName,
+                                        doctorId: widget.receiverID,
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.verified_user),
+                                title: Text('Schedule Pet Verification'),
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => PetVerificationDialog(
+                                      doctorId: widget.receiverID,
+                                      doctorName: widget.receiverName,
+                                    ),
+                                  );
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.pets),
+                                title: Text('Accept Pet Under Doctor'),
+                                onTap: () {
+                                  // TODO: Implement accept pet logic
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ]
+              : null,
         ),
         body: SafeArea(
           child: Stack(
@@ -282,5 +346,178 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ],
     );
+  }
+}
+
+class PetVerificationDialog extends StatefulWidget {
+  final String doctorId;
+  final String doctorName;
+
+  const PetVerificationDialog({
+    Key? key,
+    required this.doctorId,
+    required this.doctorName,
+  }) : super(key: key);
+
+  @override
+  State<PetVerificationDialog> createState() => _PetVerificationDialogState();
+}
+
+class _PetVerificationDialogState extends State<PetVerificationDialog> {
+  Map<String, dynamic>? selectedPet;
+  String? selectedAddressLabel;
+  DateTime? selectedDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final pets = context.read<HomepetsProvider>().petList;
+    final addresses = context.read<HomepetsProvider>().savedAddress;
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFFF4F7F2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      contentPadding: const EdgeInsets.all(16),
+      content: SizedBox(
+        height: 350,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Schedule Pet Verification",
+              style: GoogleFonts.secularOne(
+                fontSize: 22,
+                color: const Color(0xFF9CAF88),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            DropdownButton<Map<String, dynamic>>(
+              value: selectedPet,
+              hint: const Text("Select a Pet"),
+              isExpanded: true,
+              items: pets.map((item) {
+                return DropdownMenuItem<Map<String, dynamic>>(
+                  value: item,
+                  child: Text(
+                    item["name"] ?? "Unnamed",
+                    style: GoogleFonts.secularOne(fontSize: 19),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() => selectedPet = value);
+              },
+            ),
+            const SizedBox(height: 10),
+            DropdownButton<String>(
+              value: selectedAddressLabel,
+              hint: const Text("Select Address"),
+              isExpanded: true,
+              items: addresses.keys.map((label) {
+                return DropdownMenuItem<String>(
+                  value: label,
+                  child: Text(
+                    label,
+                    style: GoogleFonts.secularOne(fontSize: 19),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() => selectedAddressLabel = value);
+              },
+            ),
+            const SizedBox(height: 10),
+            ListTile(
+              title: Text(
+                selectedDate == null
+                    ? "Select Date"
+                    : DateFormat('yyyy-MM-dd').format(selectedDate!),
+                style: GoogleFonts.secularOne(fontSize: 18),
+              ),
+              trailing: Icon(Icons.calendar_today),
+              onTap: () async {
+                final now = DateTime.now();
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: now,
+                  firstDate: now,
+                  lastDate: now.add(Duration(days: 30)),
+                );
+                if (picked != null) {
+                  setState(() => selectedDate = picked);
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9CAF88),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+              ),
+              onPressed: (selectedPet != null &&
+                      selectedAddressLabel != null &&
+                      selectedDate != null)
+                  ? () => _confirmVerification(context)
+                  : null,
+              child: const Text(
+                "Confirm",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmVerification(BuildContext context) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not logged in');
+      final addresses = context.read<HomepetsProvider>().savedAddress;
+      final address = addresses[selectedAddressLabel]?['address'] ?? '';
+
+      final requestData = {
+        'typeOfRequest': 'pet_verification',
+        'petId': selectedPet!['petId'],
+        'petName': selectedPet!['name'],
+        'userId': user.uid,
+        'userName': user.displayName ?? 'Unknown User',
+        'date': selectedDate,
+        'address': address,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'animalType': selectedPet!["animalType"] ?? "Unknown",
+        'breed': selectedPet!["breed"] ?? "Unknown"
+      };
+
+      await FirebaseFirestore.instance
+          .collection('doctors_data')
+          .doc(widget.doctorId)
+          .collection('requests')
+          .add(requestData);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pet verification request sent successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

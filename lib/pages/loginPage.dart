@@ -3,6 +3,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/pages/pagenav.dart';
+import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 
 class Loginpage extends StatefulWidget {
@@ -22,35 +24,6 @@ class _LoginpageState extends State<Loginpage> {
     super.initState();
     _switchValue = widget.switchbool;
   }
-
-  // Future<String> authenticate(
-  //     String role, String useremail, String password) async {
-  //   try {
-  //     await FirebaseAuth.instance
-  //         .signInWithEmailAndPassword(email: useremail, password: password);
-  //     final currentUser = FirebaseAuth.instance.currentUser;
-
-  //     currentUserId = currentUser!.uid;
-  //     widget.db.updateDatabase("userEmail", useremail);
-  //     widget.db.updateDatabase("password", password);
-  //     widget.db.updateDatabase("role", role);
-
-  //     if (role != "doctor") {
-  //       widget.db.switchValue = false;
-  //     }
-  //     return ('success');
-  //   } on FirebaseAuthException catch (e) {
-  //     if (e.code == 'user-not-found') {
-  //       return ('No user found for that email.');
-  //     } else if (e.code == 'wrong-password') {
-  //       return ('Wrong password provided for that user.');
-  //     } else {
-  //       return ('incorrect credentials');
-  //     }
-  //   } catch (e) {
-  //     return ('Error: $e');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -179,13 +152,16 @@ class _LoginpageState extends State<Loginpage> {
                                 FirebaseAuth.instance.currentUser!.uid;
                             userName.clear();
                             password.clear();
-                            Navigator.pushNamed(
+                            Navigator.push(
                               context,
-                              '/pagenavpage',
-                              arguments: <String, String>{
-                                'switchValue': _switchValue.toString(),
-                                'userId': currentUserId,
-                              },
+                              MaterialPageRoute(
+                                builder: (context) => PageNav(
+                                  CurrentPageIndex: 1,
+                                  db: widget.db,
+                                  SwitchValue: _switchValue,
+                                  CurrentUserId: currentUserId,
+                                ),
+                              ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -220,13 +196,16 @@ class _LoginpageState extends State<Loginpage> {
                                 FirebaseAuth.instance.currentUser!.uid;
                             userName.clear();
                             password.clear();
-                            Navigator.pushNamed(
+                            Navigator.push(
                               context,
-                              '/pagenavpage',
-                              arguments: <String, String>{
-                                'switchValue': _switchValue.toString(),
-                                'userId': currentUserId,
-                              },
+                              MaterialPageRoute(
+                                builder: (context) => PageNav(
+                                  CurrentPageIndex: 1,
+                                  db: widget.db,
+                                  SwitchValue: _switchValue,
+                                  CurrentUserId: currentUserId,
+                                ),
+                              ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -269,8 +248,14 @@ class _LoginpageState extends State<Loginpage> {
                     height: 24,
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/registerpage',
-                        arguments: _switchValue),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Registerpage(
+                          db: widget.db,
+                        ),
+                      ),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

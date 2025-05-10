@@ -7,13 +7,19 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:veterinary_app/clinicLocationProvider.dart';
+import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/soloChat.dart';
+import 'package:veterinary_app/utils/slotBoolkingDialogue.dart';
 
 class Mappage extends StatefulWidget {
   final double userLatitude;
   final double userLongitude;
+  final String mapType;
   const Mappage(
-      {super.key, required this.userLatitude, required this.userLongitude});
+      {super.key,
+      required this.userLatitude,
+      required this.userLongitude,
+      required this.mapType});
 
   @override
   State<Mappage> createState() => _MappageState();
@@ -25,22 +31,26 @@ class _MappageState extends State<Mappage> {
   LatLng? selectedMarkerPosition;
   DocumentSnapshot? selectedClinic;
 
+  late List<DocumentSnapshot> clinics;
+  late List<Map<String, dynamic>> items;
+
   String? doctorName;
-  late String doctorId;
-  late GeoPoint geoPoint;
+  String? doctorId;
+  GeoPoint? geoPoint;
   bool hoverDoctor = false;
 
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-
-  List<DocumentSnapshot> clinics = [];
 
   @override
   void initState() {
     super.initState();
     centerLatitude = widget.userLatitude;
     centerLongitude = widget.userLongitude;
-    clinics = context.read<Cliniclocationprovider>().nearbyClinics;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      items = context.read<HomepetsProvider>().petList;
+    });
   }
 
   CameraPosition get _initialPosition => CameraPosition(
@@ -60,13 +70,27 @@ class _MappageState extends State<Mappage> {
         .animateCamera(CameraUpdate.newCameraPosition(_closeUpPosition));
   }
 
+  void _onMarkerTapped(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    setState(() {
+      hoverDoctor = true;
+      selectedClinic = doc;
+      doctorName = data['doctorName'] ?? 'Unknown Doctor';
+      doctorId = data['doctorID'] ?? 'Unknown Doctor';
+      geoPoint = data['geo']['geopoint'] as GeoPoint;
+      selectedMarkerPosition = LatLng(geoPoint!.latitude, geoPoint!.longitude);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    clinics = (widget.mapType == "urgentDoctors")
+        ? context.watch<Cliniclocationprovider>().urgentDoctors
+        : context.watch<Cliniclocationprovider>().nearbyClinics;
     return Scaffold(
       appBar: (hoverDoctor)
           ? AppBar(
-              backgroundColor:
-                  const Color.fromARGB(255, 130, 163, 94), // Sage green
+              backgroundColor: const Color.fromARGB(255, 76, 99, 51),
               automaticallyImplyLeading: false,
               toolbarHeight: 140,
               titleSpacing: 0,
@@ -75,28 +99,25 @@ class _MappageState extends State<Mappage> {
                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
                 child: Row(
                   children: [
-                    // Asset image as leading widget
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
-                        'assets/images/greenuserdp.jpg',
-                        height: 60,
-                        width: 60,
+                        'assets/images/doctordp.png',
+                        height: 75,
+                        width: 65,
                         fit: BoxFit.cover,
                       ),
                     ),
                     const SizedBox(width: 12),
-
-                    // Center part (Doctor name + subtitle)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            doctorName!,
+                            doctorName ?? 'Unknown Doctor',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -112,47 +133,69 @@ class _MappageState extends State<Mappage> {
                         ],
                       ),
                     ),
-
-                    // Three buttons at the end
                     Row(
                       children: [
                         IconButton(
                           onPressed: () async {
-                            final String googleMapsUrl =
-                                "https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${geoPoint.latitude},${geoPoint.longitude}";
-                            await canLaunchUrl(Uri.parse(googleMapsUrl))
-                                ? launchUrl(Uri.parse(googleMapsUrl))
-                                : throw 'Could not launch Google Maps';
+                            if (geoPoint != null) {
+                              final String googleMapsUrl =
+                                  "https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${geoPoint!.latitude},${geoPoint!.longitude}";
+                              await canLaunchUrl(Uri.parse(googleMapsUrl))
+                                  ? launchUrl(Uri.parse(googleMapsUrl))
+                                  : throw 'Could not launch Google Maps';
+                            }
                           },
                           icon: const Icon(Icons.navigation),
                           color: Colors.white,
                         ),
                         IconButton(
-                          onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatPage(
+                          onPressed: () {
+                            if (doctorName != null && doctorId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatPage(
                                     receiverName: doctorName!,
-                                    receiverID: doctorId,
+                                    receiverID: doctorId!,
                                     switchValue: "true",
-                                    recieverRole: "doctor"),
-                              )),
+                                    recieverRole: "doctor",
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                           icon: const Icon(Icons.chat_bubble_outline),
                           color: Colors.white,
                         ),
-                        Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Book Now',
-                            style: TextStyle(
-                              color: Color(0xFF9CAF88),
-                              fontWeight: FontWeight.w600,
+                        GestureDetector(
+                          onTap: () {
+                            if (doctorName != null && doctorId != null) {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return BookingDialog(
+                                    items: items,
+                                    doctorName: doctorName!,
+                                    doctorId: doctorId!,
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Book Now',
+                              style: TextStyle(
+                                color: Color(0xFF9CAF88),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -180,79 +223,29 @@ class _MappageState extends State<Mappage> {
               infoWindow: InfoWindow(title: "Your Location"),
               onTap: () => setState(() {
                 selectedClinic = null;
+                hoverDoctor = false;
+                doctorName = null;
+                doctorId = null;
+                geoPoint = null;
+                selectedMarkerPosition = null;
               }),
             ),
             ...clinics.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
-              geoPoint = data['geo']['geopoint'] as GeoPoint;
-              doctorId = data['doctorID'] ?? 'Unknown Doctor';
-              doctorName = data['doctorName'] ?? 'Unknown Doctor';
+              final GeoPoint point = data['geo']['geopoint'] as GeoPoint;
+              final String docId = data['doctorID'] ?? 'Unknown Doctor';
 
               return Marker(
-                markerId: MarkerId(doctorId),
-                position: LatLng(geoPoint.latitude, geoPoint.longitude),
+                markerId: MarkerId(docId),
+                position: LatLng(point.latitude, point.longitude),
                 icon: BitmapDescriptor.defaultMarkerWithHue(
                     BitmapDescriptor.hueRed),
-                onTap: () {
-                  setState(() {
-                    hoverDoctor = true;
-                    selectedMarkerPosition =
-                        LatLng(geoPoint.latitude, geoPoint.longitude);
-                    selectedClinic = doc;
-                  });
-                },
+                onTap: () => _onMarkerTapped(doc),
               );
             }),
           }.toSet(),
         ),
-        // Positioned(
-        //   bottom: 80,
-        //   left: 20,
-        //   right: 20,
-        //   child: Card(
-        //     elevation: 8,
-        //     shape:
-        //         RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        //     child: Padding(
-        //       padding: const EdgeInsets.all(12.0),
-        //       child: Row(
-        //         children: [
-        //           Image.asset(
-        //             'assets/images/greenuserdp.jpg',
-        //             height: 50,
-        //             width: 50,
-        //           ),
-        //           const SizedBox(width: 10),
-        //           Expanded(
-        //             child: Column(
-        //               crossAxisAlignment: CrossAxisAlignment.start,
-        //               children: [
-        //                 Text(
-        //                   // selectedClinic!['clinicName'] ??
-        //                   'Doctor',
-        //                   style: TextStyle(fontWeight: FontWeight.bold),
-        //                 ),
-        //                 Text("Distance: 3.2 km"),
-        //               ],
-        //             ),
-        //           ),
-        //           ElevatedButton(
-        //             onPressed: () {
-        //               // open chat screen
-        //             },
-        //             child: Text("Chat"),
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
-        // )
       ]),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _goToCloseUp,
-      //   label: const Text('Closer Look!'),
-      //   icon: const Icon(Icons.zoom_in_map),
-      // ),
     );
   }
 }

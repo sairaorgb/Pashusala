@@ -11,6 +11,10 @@ import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
+import 'package:veterinary_app/pages/doctorBookingRequests.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:veterinary_app/utils/imageProvider.dart';
 
 class HomePage extends StatefulWidget {
   String switchValue;
@@ -31,6 +35,7 @@ class _HomePageState extends State<HomePage> {
 
   bool isLoading = true;
   String? errorMessage;
+  bool isDoctorAvailable = false;
 
   TextEditingController label = TextEditingController();
   TextEditingController landmark = TextEditingController();
@@ -40,6 +45,17 @@ class _HomePageState extends State<HomePage> {
   TextEditingController pincode = TextEditingController();
 
   bool isHomeExpanded = false;
+
+  void toggleUrgency(bool value) {
+    setState(() {
+      if (value) {
+        context.read<HomepetsProvider>().startUrgentAvailabilityUpdates();
+      } else {
+        context.read<HomepetsProvider>().stopUrgentAvailabilityUpdates();
+      }
+      isDoctorAvailable = value;
+    });
+  }
 
   @override
   void initState() {
@@ -89,6 +105,13 @@ class _HomePageState extends State<HomePage> {
     label.text = newLabel;
     context.read<HomepetsProvider>().tempBox.put("selectedIndex", newLabel);
     context.read<HomepetsProvider>().selectedIndex = newLabel;
+
+    // Check if newLabel is a valid key in savedAddress
+    if (!context.read<HomepetsProvider>().savedAddress.containsKey(newLabel)) {
+      // Handle the case where newLabel is not a valid key
+      print('Invalid address label: $newLabel');
+    }
+
     landmark.text =
         context.read<HomepetsProvider>().savedAddress[newLabel]!['landmark'] ??
             '';
@@ -180,14 +203,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String _currentUserId = widget.currentUserId;
-    if (widget.switchValue == "true") {}
-
     return Stack(
       children: [
         Positioned.fill(
           child: Container(
-            // height: 700,
             decoration: BoxDecoration(
               color: Color.fromRGBO(240, 232, 213, 1),
               borderRadius: BorderRadius.only(
@@ -196,356 +215,657 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 30,
-                ),
+                SizedBox(height: 30),
+                // Address Section
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Color.fromRGBO(16, 42, 66, 1),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(28),
-                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(28)),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 10),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                child: isLoading
-                                    ? CircularProgressIndicator()
-                                    : errorMessage != null
-                                        ? Text(
-                                            errorMessage!,
-                                            style: TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 16),
-                                          )
-                                        : SizedBox(
-                                            width: 330,
-                                            // height: 80,
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () =>
-                                                      AddressBottomSheet.show(
-                                                          context,
-                                                          context
-                                                              .read<
-                                                                  HomepetsProvider>()
-                                                              .savedAddress,
-                                                          changeIndexParameters,
-                                                          widget
-                                                              .db.switchValue),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal:
-                                                                    6.0),
-                                                        child: Row(
-                                                          children: [
-                                                            Icon(
-                                                                Icons
-                                                                    .location_on,
-                                                                color:
-                                                                    Colors.red,
-                                                                size: 30),
-                                                            SizedBox(
-                                                              width: 10,
-                                                            ),
-                                                            Text(
-                                                              context
-                                                                  .read<
-                                                                      HomepetsProvider>()
-                                                                  .selectedIndex,
-                                                              style: GoogleFonts
-                                                                  .secularOne(
-                                                                      fontSize:
-                                                                          22,
-                                                                      color: Colors
-                                                                          .white),
-                                                            ),
-                                                            SizedBox(
-                                                              width: 6,
-                                                            ),
-                                                            Icon(
-                                                                Icons
-                                                                    .arrow_drop_down_outlined,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 38),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: 16,
-                                                      ),
-                                                      SizedBox(
-                                                        width: 330,
-                                                        child: Expanded(
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        15.0),
-                                                            child: Text(
-                                                              selectedAddress!,
-                                                              softWrap: true,
-                                                              maxLines: 2,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              style: GoogleFonts
-                                                                  .secularOne(
-                                                                      fontSize:
-                                                                          16,
-                                                                      color: Colors
-                                                                          .white),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                              ),
-                              Spacer(),
-                              IconButton(
-                                onPressed: () => showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(20.0)),
-                                  ),
-                                  builder: (context) {
-                                    return Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom: MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom,
-                                        left: 16,
-                                        right: 16,
-                                        top: 20,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'Enter Address',
-                                            style: GoogleFonts.secularOne(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          SizedBox(height: 10),
-                                          _buildTextField(
-                                              label, 'Address Label'),
-                                          _buildTextField(landmark, 'Landmark'),
-                                          _buildTextField(town, 'Town'),
-                                          _buildTextField(district, 'District'),
-                                          _buildTextField(state, 'State'),
-                                          _buildTextField(pincode, 'Pin Code',
-                                              isNumber: true),
-                                          SizedBox(height: 20),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.brown,
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: GestureDetector(
-                                              onTap: () => submitAddress(),
-                                              child: Text('Submit',
-                                                  style: GoogleFonts.secularOne(
-                                                      fontSize: 18)),
-                                            ),
-                                          ),
-                                          SizedBox(height: 10),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                icon: Icon(
-                                  Icons.edit,
-                                  size: 28,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      child: _buildAddressSection(),
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 8,
-                ),
+                SizedBox(height: 8),
+                // Doctor's Urgent Availability Switch
+                if (widget.db.switchValue) _buildUrgentAvailabilityToggle(),
+                // User's Action Buttons
                 if (!widget.db.switchValue)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 13.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTap: () async {
+                        _buildActionButton(
+                          "Nearby Doctors  📍",
+                          () async {
                             var lat = context
                                 .read<HomepetsProvider>()
                                 .selectedLatitude!;
                             var long = context
                                 .read<HomepetsProvider>()
                                 .selectedLongitude!;
-                            print(lat);
-                            print(long);
                             await context
                                 .read<Cliniclocationprovider>()
                                 .fetchNearbyClinics(lat, long);
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Mappage(
-                                      userLatitude: lat, userLongitude: long),
-                                ));
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: Color.fromRGBO(16, 42, 66, 1),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20))),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Center(
-                                child: Text(
-                                  "Nearby Doctors  📍",
-                                  style: GoogleFonts.secularOne(
-                                      fontSize: 18, color: Colors.white),
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Mappage(
+                                  userLatitude: lat,
+                                  userLongitude: long,
+                                  mapType: "nearbyClinics",
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Color.fromRGBO(16, 42, 66, 1),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(20))),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Center(
-                              child: Text(
-                                "Emergency service  🚨",
-                                style: GoogleFonts.secularOne(
-                                    fontSize: 18, color: Colors.white),
+                        _buildActionButton(
+                          "Emergency service  🚨",
+                          () async {
+                            var lat = context
+                                .read<HomepetsProvider>()
+                                .selectedLatitude!;
+                            var long = context
+                                .read<HomepetsProvider>()
+                                .selectedLongitude!;
+                            context
+                                .read<Cliniclocationprovider>()
+                                .listenToUrgentDoctors(lat, long);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Mappage(
+                                  userLatitude: lat,
+                                  userLongitude: long,
+                                  mapType: "urgentDoctors",
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
-                SizedBox(
-                  height: 10,
+                SizedBox(height: 10),
+                // Main Content Section
+                Expanded(
+                  child: widget.db.switchValue
+                      ? _buildDoctorView()
+                      : _buildUserView(),
                 ),
-                if (!widget.db.switchValue)
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressSection() {
+    return Row(
+      children: [
+        Container(
+          child: isLoading
+              ? Center(child: CircularProgressIndicator())
+              : errorMessage != null
+                  ? Text(
+                      errorMessage!,
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    )
+                  : SizedBox(
+                      width: 330,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () => AddressBottomSheet.show(
+                              context,
+                              context.read<HomepetsProvider>().savedAddress,
+                              changeIndexParameters,
+                              widget.db.switchValue,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6.0),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.location_on,
+                                          color: Colors.red, size: 30),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        context
+                                            .read<HomepetsProvider>()
+                                            .selectedIndex,
+                                        style: GoogleFonts.secularOne(
+                                          fontSize: 22,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Icon(Icons.arrow_drop_down_outlined,
+                                          color: Colors.white, size: 38),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                                SizedBox(
+                                  width: 330,
+                                  child: Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 15.0),
+                                      child: Text(
+                                        selectedAddress!,
+                                        softWrap: true,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.secularOne(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+        ),
+        Spacer(),
+        IconButton(
+          onPressed: () => _showAddressInputSheet(),
+          icon: Icon(
+            Icons.edit,
+            size: 28,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String text, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(16, 42, 66, 1),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Center(
+            child: Text(
+              text,
+              style: GoogleFonts.secularOne(fontSize: 18, color: Colors.white),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorView() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Booking Requests",
+                style: GoogleFonts.secularOne(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromRGBO(16, 42, 66, 1),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('doctors_data')
+                .doc(widget.currentUserId)
+                .collection('requests')
+                .where('status', isEqualTo: 'pending')
+                .orderBy('createdAt', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final requests = snapshot.data?.docs ?? [];
+
+              if (requests.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No pending requests',
+                    style: GoogleFonts.secularOne(
+                      fontSize: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: requests.length,
+                itemBuilder: (context, index) {
+                  final request = requests[index].data() as Map<String, dynamic>;
+                  final requestId = requests[index].id;
+                  final typeOfRequest = request['typeOfRequest'] ?? 'appointment';
+                  final petName = request['petName'] ?? '';
+                  final userName = request['userName'] ?? '';
+                  final breed = request['breed'] ?? '';
+                  final animalType = request['animalType'] ?? '';
+                  final dateRaw = request['date'];
+                  DateTime? date;
+                  if (dateRaw is Timestamp) {
+                    date = dateRaw.toDate();
+                  } else if (dateRaw is DateTime) {
+                    date = dateRaw;
+                  }
+                  final time = request['time'];
+                  final address = request['address'];
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white,
+                            Color.fromRGBO(240, 232, 213, 0.5),
+                          ],
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // "My Pets" text on the left
                             Text(
-                              "My Pets",
-                              style: GoogleFonts.sahitya(
-                                fontSize: 28,
+                              typeOfRequest == 'pet_verification'
+                                  ? 'Pet Verification'
+                                  : 'Appointment',
+                              style: GoogleFonts.secularOne(
                                 fontWeight: FontWeight.bold,
+                                color: typeOfRequest == 'pet_verification'
+                                    ? Colors.orange
+                                    : Color(0xFF9CAF88),
+                                fontSize: 16,
                               ),
                             ),
-                            // Three dots (more_vert icon) on the right
-                            PopupMenuButton<String>(
-                              icon: Icon(Icons.more_vert),
-                              onSelected: (value) {
-                                if (value == 'add_pet') {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => ShowPetInfoDialog(
-                                      currentUserId: _currentUserId,
-                                      db: widget.db,
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.asset(
+                                      getImagePath(animalType, breed),
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
                                     ),
-                                  );
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'add_pet',
-                                  child: Text("Add New Pet"),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        petName,
+                                        style: GoogleFonts.secularOne(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF9CAF88),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Owner: $userName',
+                                        style: GoogleFonts.secularOne(
+                                          fontSize: 16,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      if (typeOfRequest == 'pet_verification' && address != null)
+                                        Text('Address: $address'),
+                                      if (typeOfRequest == 'appointment' && time != null)
+                                        Text('Slot: $time'),
+                                      if (date != null)
+                                        Text('Date: ${DateFormat('MMM dd, yyyy').format(date)}'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () => _handleBookingRequest(
+                                      requestId, 'rejected'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(color: Colors.red),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Decline',
+                                    style: GoogleFonts.secularOne(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                ElevatedButton(
+                                  onPressed: () => _handleBookingRequest(
+                                      requestId, 'accepted',
+                                      date: date, time: time),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF9CAF88),
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Accept',
+                                    style: GoogleFonts.secularOne(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                SizedBox(height: 20),
-                Consumer<HomepetsProvider>(builder: (context, homePets, child) {
-                  return homePets.petList.isEmpty
-                      ? CircularProgressIndicator()
-                      : Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            itemCount: homePets.petList.length,
-                            itemBuilder: (context, index) {
-                              final pet = homePets.petList[index];
-                              return homePageTile(
-                                name: pet['name'] ?? "Unknown",
-                                animalType: pet['animalType'] ?? "Unknown",
-                                age: pet['age'] ?? "Unknown",
-                                height: pet['height'] ?? "Unknown",
-                                weight: pet['weight'] ?? "Unknown",
-                                breed: pet['breed'] ?? "Unknown",
-                                currentUserId: _currentUserId,
-                                status: pet['status'] ?? "Unknown",
-                                petId: pet['petId'] ?? "Unknown",
-                              );
-                            },
-                          ),
-                        );
-                }),
-              ],
-            ),
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildUserView() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "My Pets",
+                style: GoogleFonts.sahitya(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert),
+                onSelected: (value) {
+                  if (value == 'add_pet') {
+                    showDialog(
+                      context: context,
+                      builder: (context) => ShowPetInfoDialog(
+                        currentUserId: widget.currentUserId,
+                        db: widget.db,
+                      ),
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'add_pet',
+                    child: Text("Add New Pet"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Consumer<HomepetsProvider>(
+            builder: (context, homePets, child) {
+              return homePets.petList.isEmpty
+                  ? CircularProgressIndicator()
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      itemCount: homePets.petList.length,
+                      itemBuilder: (context, index) {
+                        final pet = homePets.petList[index];
+                        return homePageTile(
+                          name: pet['name'] ?? "Unknown",
+                          animalType: pet['animalType'] ?? "Unknown",
+                          age: pet['age'] ?? "Unknown",
+                          height: pet['height'] ?? "Unknown",
+                          weight: pet['weight'] ?? "Unknown",
+                          breed: pet['breed'] ?? "Unknown",
+                          currentUserId: widget.currentUserId,
+                          status: pet['status'] ?? "Unknown",
+                          petId: pet['petId'] ?? "Unknown",
+                        );
+                      },
+                    );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleBookingRequest(String requestId, String status,
+      {DateTime? date, String? time}) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('doctors_data')
+          .doc(widget.currentUserId)
+          .collection('requests')
+          .doc(requestId)
+          .update({'status': status});
+
+      if (status == 'accepted' && date != null && time != null) {
+        await FirebaseFirestore.instance
+            .collection('doctors_data')
+            .doc(widget.currentUserId)
+            .collection('timeSlots')
+            .doc(DateFormat('yyyy-MM-dd').format(date))
+            .set({
+          time: false,
+        }, SetOptions(merge: true));
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Booking request $status successfully'),
+            backgroundColor: status == 'accepted' ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showAddressInputSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Enter Address',
+                style: GoogleFonts.secularOne(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10),
+              _buildTextField(label, 'Address Label'),
+              _buildTextField(landmark, 'Landmark'),
+              _buildTextField(town, 'Town'),
+              _buildTextField(district, 'District'),
+              _buildTextField(state, 'State'),
+              _buildTextField(pincode, 'Pin Code', isNumber: true),
+              SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: submitAddress,
+                child:
+                    Text('Submit', style: GoogleFonts.secularOne(fontSize: 18)),
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUrgentAvailabilityToggle() {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(16, 42, 66, 1),
+          borderRadius: BorderRadius.all(Radius.circular(28)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.emergency,
+                    color: isDoctorAvailable ? Colors.red : Colors.grey,
+                    size: 24,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Urgent Availability',
+                    style: GoogleFonts.secularOne(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: isDoctorAvailable
+                      ? Colors.red.withOpacity(0.2)
+                      : Colors.grey.withOpacity(0.2),
+                ),
+                child: Switch(
+                  value: isDoctorAvailable,
+                  onChanged: toggleUrgency,
+                  activeColor: Colors.red,
+                  activeTrackColor: Colors.red.withOpacity(0.5),
+                  inactiveThumbColor: Colors.grey,
+                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -578,7 +898,6 @@ class AddressBottomSheet {
       void Function(String) ontap,
       bool isDoctor) {
     savedAddresses = savedAddresses;
-    // ..addAll(context.read<HomepetsProvider>().currentMap!);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -682,24 +1001,22 @@ class AddressBottomSheet {
       },
     );
   }
+}
 
-  static String _buildAddressString(Map<String, String?> fields) {
-    List<String> parts = [];
-    if (fields['Landmark'] != null && fields['Landmark']!.isNotEmpty) {
-      parts.add(fields['Landmark']!);
-    }
-    if (fields['Town'] != null && fields['Town']!.isNotEmpty) {
-      parts.add(fields['Town']!);
-    }
-    if (fields['District'] != null && fields['District']!.isNotEmpty) {
-      parts.add(fields['District']!);
-    }
-    if (fields['State'] != null && fields['State']!.isNotEmpty) {
-      parts.add(fields['State']!);
-    }
-    if (fields['Pin Code'] != null && fields['Pin Code']!.isNotEmpty) {
-      parts.add(fields['Pin Code']!);
-    }
-    return parts.join(", ");
+Future<void> setUrgentAvailability(
+    bool isAvailable, String doctorId, Map<String, dynamic> data) async {
+  final urgentDocRef = FirebaseFirestore.instance
+      .collection('locations')
+      .doc('urgentLocations')
+      .collection('urgent_locations')
+      .doc(doctorId);
+
+  if (isAvailable) {
+    await urgentDocRef.set({
+      ...data,
+      'createdAt': DateTime.now(),
+    });
+  } else {
+    await urgentDocRef.delete();
   }
 }

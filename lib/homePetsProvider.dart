@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:veterinary_app/database.dart';
 
 class HomepetsProvider extends ChangeNotifier {
   var tempBox = Hive.box('myBox');
@@ -17,6 +19,9 @@ class HomepetsProvider extends ChangeNotifier {
   bool isAddressModified = false;
   late bool isDoctor;
   late String selectedIndex = "Current";
+
+  late Timer _timer;
+  bool get isRunning => _timer?.isActive ?? false;
 
   // Map<String, Map<String, dynamic>>? currentMap;
   List<Map<String, dynamic>> petList = [];
@@ -32,6 +37,10 @@ class HomepetsProvider extends ChangeNotifier {
   Future<void> initDatabase() async {
     user = FirebaseAuth.instance.currentUser;
     fbStoreInstance = FirebaseFirestore.instance;
+
+    if (isDoctor) {
+      await resetUrgentAvailability(user!.uid);
+    }
 
     if (savedAddress.isEmpty) {
       if (tempBox.containsKey('savedAddress')) {
@@ -67,26 +76,28 @@ class HomepetsProvider extends ChangeNotifier {
         }
       }
     }
-    if (petList.isEmpty) {
-      if (tempBox.containsKey('petList')) {
-        var rawList = tempBox.get("petList") as List<dynamic>? ?? [];
-        petList = rawList
-            .whereType<Map>()
-            .map((item) => Map<String, dynamic>.from(item))
-            .toList();
-      } else {
-        var docsnap = await fbStoreInstance!
-            .collection("users_data")
-            .doc(user?.uid)
-            .get();
-        if (!docsnap.exists) tempBox.put("petList", []);
-        if (docsnap.exists) {
-          petList = (await fetchPets(user!.uid)) ?? [];
-          updateDatabase("petList", petList);
+    if (!isDoctor) {
+      if (petList.isEmpty) {
+        if (tempBox.containsKey('petList')) {
+          var rawList = tempBox.get("petList") as List<dynamic>? ?? [];
+          petList = rawList
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        } else {
+          var docsnap = await fbStoreInstance!
+              .collection("users_data")
+              .doc(user?.uid)
+              .get();
+          if (!docsnap.exists) tempBox.put("petList", []);
+          if (docsnap.exists) {
+            petList = (await fetchPets(user!.uid)) ?? [];
+            updateDatabase("petList", petList);
+          }
         }
       }
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void updateDatabase(String key, var value) {
@@ -223,6 +234,8 @@ class HomepetsProvider extends ChangeNotifier {
       }
     } else {
       try {
+        print("sabaresh satf");
+
         var creferenece =
             fbStoreInstance!.collection('doctors_data').doc(user?.uid);
 
@@ -315,11 +328,71 @@ class HomepetsProvider extends ChangeNotifier {
           'geo': geoFirePoint.data,
           'doctorID': user!.uid,
           'doctorName': tempBox.get('userName'),
-          // "doctorName":
         });
       }
     } catch (e) {
       print('Error saving pet details: $e');
     }
+  }
+
+  void startUrgentAvailabilityUpdates() async {
+    // Immediately add the urgent location
+    await _updateUrgentLocationOnce();
+
+    // Then start periodic updates every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (_) async {
+      await _updateUrgentLocationOnce();
+    });
+  }
+
+  Future<void> _updateUrgentLocationOnce() async {
+    try {
+      // Get current location
+      final position = await Geolocator.getCurrentPosition();
+
+      final geoPoint = GeoPoint(position.latitude, position.longitude);
+      final geoFirePoint = GeoFirePoint(geoPoint);
+
+      final clinicLocations = fbStoreInstance!
+          .collection('locations')
+          .doc("urgentLocations")
+          .collection("urgent_locations")
+          .doc(user?.uid);
+
+      await clinicLocations.set({
+        'geo': geoFirePoint.data,
+        'doctorID': user?.uid,
+        'doctorName': tempBox.get('userName'),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("Failed to update urgent location: $e");
+    }
+  }
+
+  void stopUrgentAvailabilityUpdates() async {
+    await fbStoreInstance!
+        .collection('locations')
+        .doc("urgentLocations")
+        .collection("urgent_locations")
+        .doc(user?.uid)
+        .delete();
+    _timer?.cancel();
+  }
+
+  Future<void> resetUrgentAvailability(String doctorId) async {
+    final urgentDocRef = FirebaseFirestore.instance
+        .collection('locations')
+        .doc('urgentLocations')
+        .collection('urgent_locations')
+        .doc(doctorId);
+
+    // Delete the doc if it exists
+    final urgentDoc = await urgentDocRef.get();
+    if (urgentDoc.exists) {
+      await urgentDocRef.delete();
+    }
+    // Set toggle to off in your provider/state
+    notifyListeners();
   }
 }

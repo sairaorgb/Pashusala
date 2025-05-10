@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:veterinary_app/database.dart';
+import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -40,8 +41,32 @@ class _RegisterpageState extends State<Registerpage> {
           'doctorName': doctorname,
           'doctorEmail': doctoremail,
           'doctorPhone': doctorphone,
-          'doctorKVSC': doctorkvsc
+          'doctorKVSC': doctorkvsc,
         });
+        // Create time_slots subcollection for the next 7 days
+        final timeSlots = {
+          "10:00 AM": true,
+          "10:30 AM": true,
+          "11:00 AM": true,
+          "11:30 AM": true,
+          "12:00 PM": true,
+          "01:00 PM": true,
+          "03:00 PM": true,
+          "03:30 PM": true,
+          "04:00 PM": true
+        };
+        final now = DateTime.now();
+        for (int i = 0; i < 7; i++) {
+          final date = now.add(Duration(days: i));
+          final dateString =
+              "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+          await FirebaseFirestore.instance
+              .collection('doctors_data')
+              .doc(user.uid)
+              .collection('time_slots')
+              .doc(dateString)
+              .set(Map<String, bool>.from(timeSlots));
+        }
         await FirebaseFirestore.instance
             .collection("chatUsers")
             .doc(user.uid)
@@ -295,13 +320,17 @@ class _RegisterpageState extends State<Registerpage> {
                             doctorPassword.clear();
                             doctorkvsc.clear();
 
-                            Navigator.pushNamed(
+                            Navigator.push(
                               context,
-                              '/pagenavpage',
-                              arguments: <String, String>{
-                                'switchValue': switchValue.toString(),
-                                'userId': result,
-                              },
+                              MaterialPageRoute(
+                                builder: (context) => PageNav(
+                                  CurrentPageIndex: 1,
+                                  db: widget.db,
+                                  SwitchValue: switchValue,
+                                  CurrentUserId:
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                ),
+                              ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -344,13 +373,17 @@ class _RegisterpageState extends State<Registerpage> {
                             userEmail.clear();
                             userPhone.clear();
                             userPassword.clear();
-                            Navigator.pushNamed(
+                            Navigator.push(
                               context,
-                              '/pagenavpage',
-                              arguments: <String, String>{
-                                'switchValue': switchValue.toString(),
-                                'userId': result,
-                              },
+                              MaterialPageRoute(
+                                builder: (context) => PageNav(
+                                  CurrentPageIndex: 1,
+                                  db: widget.db,
+                                  SwitchValue: switchValue,
+                                  CurrentUserId:
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                ),
+                              ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(

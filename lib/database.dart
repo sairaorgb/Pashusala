@@ -8,7 +8,7 @@ class Database with ChangeNotifier {
 
   late String userEmail;
   late String password;
-  late String userName;
+  late String userName = '';
   late String role;
   bool switchValue = true;
 
@@ -20,6 +20,7 @@ class Database with ChangeNotifier {
       userEmail = tempBox.get("userEmail");
       password = tempBox.get("password");
       role = tempBox.get("role");
+      userName = tempBox.get("userName");
       var validateResult = await authenticate(role, userEmail, password);
       if (validateResult == "success") {
         user = FirebaseAuth.instance.currentUser;
@@ -50,14 +51,20 @@ class Database with ChangeNotifier {
             .get();
 
         userName = (docSnapshot.data()?['doctorName'] as String?) ?? '';
+        updateDatabase("userEmail", useremail);
+        updateDatabase("password", password);
+        updateDatabase("role", "doctor");
         updateDatabase("userName", userName);
       } else {
         docSnapshot = await FirebaseFirestore.instance
             .collection('users_data')
             .doc(user?.uid)
             .get();
-
+        switchValue = false;
         userName = (docSnapshot.data()?['userName'] as String?) ?? '';
+        updateDatabase("userEmail", useremail);
+        updateDatabase("password", password);
+        updateDatabase("role", "user");
         updateDatabase("userName", userName);
       }
 

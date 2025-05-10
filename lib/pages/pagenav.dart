@@ -11,6 +11,7 @@ import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/homepage.dart';
+import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/storePage.dart';
 import 'package:veterinary_app/utils/chatText.dart';
 
@@ -38,11 +39,6 @@ class _PageNavState extends State<PageNav> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<HomepetsProvider>().initDatabase();
-    // });
-    //   await context.read<HomepetsProvider>().initDatabase();
-    //   await context.read<HomepetsProvider>().initDatabase();
     Future(() async {
       context.read<HomepetsProvider>().isDoctor = widget.SwitchValue;
       await context.read<HomepetsProvider>().initDatabase();
@@ -60,12 +56,16 @@ class _PageNavState extends State<PageNav> {
     try {
       widget.db.logOutUser();
       Provider.of<HomepetsProvider>(context, listen: false).logout();
-
       Provider.of<CartStoreProvider>(context, listen: false).logout();
       await authinstance.signOut();
-      Navigator.pushNamedAndRemoveUntil(
+      Navigator.pushAndRemoveUntil(
         context,
-        '/loginpage',
+        MaterialPageRoute(
+          builder: (context) => Loginpage(
+            switchbool: widget.SwitchValue,
+            db: widget.db,
+          ),
+        ),
         (Route<dynamic> route) => false,
       );
     } catch (e) {
@@ -86,46 +86,52 @@ class _PageNavState extends State<PageNav> {
 
   @override
   Widget build(BuildContext context) {
-    if (ModalRoute.of(context)?.settings.arguments != null) {
-      Map<String, String> args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, String>;
-      currentUserId = args['userId']!;
-      if (args['switchValue'] == "true") {
-        switchValue = true;
-      }
-    }
-    List<Widget> pages = [
-      StorePage(
-        currentUserId: currentUserId,
-        switchValue: switchValue.toString(),
-      ),
-      HomePage(
-        switchValue: switchValue.toString(),
-        currentUserId: currentUserId,
-        db: widget.db,
-      ),
-      CartPage(
-        UserId: currentUserId,
-        switchValue: switchValue.toString(),
-      ),
-      chatModule(
-        currentUserId: currentUserId,
-        switchValue: switchValue.toString(),
-      )
-    ];
+    List<Widget> pages = (widget.db.switchValue)
+        ? [
+            HomePage(
+              switchValue: switchValue.toString(),
+              currentUserId: currentUserId,
+              db: widget.db,
+            ),
+            chatModule(
+              currentUserId: currentUserId,
+              switchValue: switchValue.toString(),
+            )
+          ]
+        : [
+            StorePage(
+              currentUserId: currentUserId,
+              switchValue: switchValue.toString(),
+            ),
+            HomePage(
+              switchValue: switchValue.toString(),
+              currentUserId: currentUserId,
+              db: widget.db,
+            ),
+            CartPage(
+              UserId: currentUserId,
+              switchValue: switchValue.toString(),
+            ),
+            chatModule(
+              currentUserId: currentUserId,
+              switchValue: switchValue.toString(),
+            )
+          ];
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor:
-          switchValue ? Colors.green[300] : Color.fromRGBO(2, 16, 36, 1),
+      backgroundColor: switchValue
+          ? Color.fromRGBO(
+              232, 245, 233, 1) // Light sage green for doctor's background
+          : Color.fromRGBO(2, 16, 36, 1), // Dark blue for user's background
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(16, 42, 66, 1),
+        backgroundColor: switchValue
+            ? Color.fromRGBO(44, 78, 46, 1) // Forest green for doctor's app bar
+            : Color.fromRGBO(16, 42, 66, 1), // Dark blue for user's app bar
         toolbarHeight: 130,
         title: Row(
           children: [
-            SizedBox(
-              width: 40,
-            ),
+            SizedBox(width: 40),
             SizedBox(
               child: Text(
                 "Pashushala",
@@ -151,98 +157,114 @@ class _PageNavState extends State<PageNav> {
         }),
       ),
       drawer: Drawer(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: switchValue
+            ? Color.fromRGBO(
+                232, 245, 233, 1) // Light sage green for doctor's drawer
+            : Color.fromRGBO(240, 232, 213, 1), // Khaki for user's drawer
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(
               children: [
                 DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: switchValue
+                        ? Color.fromRGBO(
+                            46, 125, 50, 1) // Forest green for doctor's header
+                        : Color.fromRGBO(
+                            16, 42, 66, 1), // Dark blue for user's header
+                  ),
                   child: Center(child: Image.asset('assets/images/logo.png')),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: ListTile(
-                    title: ChatText(
-                      text: 'Home',
-                      size: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    leading: Icon(
-                      Icons.home,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
+                if (!widget.db.switchValue) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25.0),
+                    child: ListTile(
+                      title: ChatText(
+                        text: 'Home',
+                        size: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      leading: Icon(
+                        Icons.home,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
                             builder: (context) => PageNav(
-                                  db: widget.db,
-                                  CurrentPageIndex: 1,
-                                  CurrentUserId: currentUserId,
-                                  SwitchValue: switchValue,
-                                )),
-                      );
-                    },
+                              db: widget.db,
+                              CurrentPageIndex: 1,
+                              CurrentUserId: currentUserId,
+                              SwitchValue: switchValue,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: ListTile(
-                    title: ChatText(
-                      text: 'Store Page',
-                      size: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    leading: Icon(
-                      Icons.shopping_cart,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25.0),
+                    child: ListTile(
+                      title: ChatText(
+                        text: 'Store Page',
+                        size: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      leading: Icon(
+                        Icons.shopping_cart,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
                             builder: (context) => PageNav(
-                                  db: widget.db,
-                                  CurrentPageIndex: 0,
-                                  CurrentUserId: currentUserId,
-                                  SwitchValue: switchValue,
-                                )),
-                      );
-                    },
+                              db: widget.db,
+                              CurrentPageIndex: 0,
+                              CurrentUserId: currentUserId,
+                              SwitchValue: switchValue,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: ListTile(
-                    title: ChatText(
-                      text: 'Wish List',
-                      size: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    leading: Icon(
-                      Icons.favorite,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25.0),
+                    child: ListTile(
+                      title: ChatText(
+                        text: 'Wish List',
+                        size: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      leading: Icon(
+                        Icons.favorite,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
                             builder: (context) => PageNav(
-                                db: widget.db,
-                                CurrentPageIndex: 2,
-                                CurrentUserId: currentUserId,
-                                SwitchValue: switchValue)),
-                      );
-                    },
+                              db: widget.db,
+                              CurrentPageIndex: 2,
+                              CurrentUserId: currentUserId,
+                              SwitchValue: switchValue,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
+                ],
                 Padding(
                   padding: const EdgeInsets.only(left: 25.0),
                   child: ListTile(
@@ -250,22 +272,32 @@ class _PageNavState extends State<PageNav> {
                       text: 'Chat',
                       size: 18,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.tertiary,
+                      color: switchValue
+                          ? Color.fromRGBO(
+                              46, 125, 50, 1) // Forest green for doctor's text
+                          : Color.fromRGBO(
+                              16, 42, 66, 1), // Dark blue for user's text
                     ),
                     leading: Icon(
                       Icons.forum,
-                      color: Theme.of(context).colorScheme.tertiary,
+                      color: switchValue
+                          ? Color.fromRGBO(
+                              46, 125, 50, 1) // Forest green for doctor's icon
+                          : Color.fromRGBO(
+                              16, 42, 66, 1), // Dark blue for user's icon
                     ),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => PageNav(
-                                db: widget.db,
-                                CurrentPageIndex: 3,
-                                CurrentUserId: currentUserId,
-                                SwitchValue: switchValue)),
+                          builder: (context) => PageNav(
+                            db: widget.db,
+                            CurrentPageIndex: widget.db.switchValue ? 1 : 3,
+                            CurrentUserId: currentUserId,
+                            SwitchValue: switchValue,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -279,12 +311,19 @@ class _PageNavState extends State<PageNav> {
                   text: 'logout',
                   size: 18,
                   fontWeight: FontWeight.w500,
-                  color: Colors.blue.shade300,
-                  // color: Theme.of(context).colorScheme.tertiary,
+                  color: switchValue
+                      ? Color.fromRGBO(
+                          23, 70, 26, 1) // Forest green for doctor's text
+                      : Color.fromRGBO(
+                          16, 42, 66, 1), // Dark blue for user's text
                 ),
                 leading: Icon(
                   Icons.logout,
-                  color: Theme.of(context).colorScheme.tertiary,
+                  color: switchValue
+                      ? Color.fromRGBO(
+                          26, 80, 29, 1) // Forest green for doctor's icon
+                      : Color.fromRGBO(
+                          16, 42, 66, 1), // Dark blue for user's icon
                 ),
                 onTap: () => logout(context),
               ),
@@ -294,31 +333,50 @@ class _PageNavState extends State<PageNav> {
       ),
       body: SafeArea(child: pages[currentPageIndex]),
       bottomNavigationBar: GNav(
-          backgroundColor: Color.fromRGBO(240, 232, 213, 1),
-          activeColor: Color.fromRGBO(41, 52, 72, 1),
-          mainAxisAlignment: MainAxisAlignment.center,
-          color: Colors.grey.shade500,
-          tabBorderRadius: 16,
-          onTabChange: (index) => onTabchange(index),
-          selectedIndex: currentPageIndex,
-          tabs: [
-            GButton(
-              icon: Icons.shopping_cart,
-              text: "Shop",
-            ),
-            GButton(
-              icon: Icons.home,
-              text: "Home",
-            ),
-            GButton(
-              icon: Icons.favorite,
-              text: "Wishlist",
-            ),
-            GButton(
-              icon: Icons.chat,
-              text: "Chat",
-            )
-          ]),
+        backgroundColor: switchValue
+            ? Color.fromRGBO(
+                232, 245, 233, 1) // Light sage green for doctor's nav bar
+            : Color.fromRGBO(240, 232, 213, 1), // Khaki for user's nav bar
+        activeColor: switchValue
+            ? Color.fromRGBO(
+                47, 93, 49, 1) // Forest green for doctor's active items
+            : Color.fromRGBO(
+                16, 42, 66, 1), // Dark blue for user's active items
+        mainAxisAlignment: MainAxisAlignment.center,
+        color: Colors.grey.shade600, // Grey for inactive items
+        tabBorderRadius: 16,
+        onTabChange: (index) => onTabchange(index),
+        selectedIndex: currentPageIndex,
+        tabs: widget.db.switchValue
+            ? [
+                GButton(
+                  icon: Icons.home,
+                  text: 'Home',
+                ),
+                GButton(
+                  icon: Icons.forum,
+                  text: 'Chat',
+                ),
+              ]
+            : [
+                GButton(
+                  icon: Icons.shopping_cart,
+                  text: 'Store',
+                ),
+                GButton(
+                  icon: Icons.home,
+                  text: 'Home',
+                ),
+                GButton(
+                  icon: Icons.favorite,
+                  text: 'Wish List',
+                ),
+                GButton(
+                  icon: Icons.forum,
+                  text: 'Chat',
+                ),
+              ],
+      ),
     );
   }
 }
