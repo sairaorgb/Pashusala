@@ -2,14 +2,14 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/utils/usertextfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Registerpage extends StatefulWidget {
-  Database db;
-  Registerpage({super.key, required this.db});
+  Registerpage({super.key});
 
   @override
   State<Registerpage> createState() => _RegisterpageState();
@@ -26,8 +26,13 @@ class _RegisterpageState extends State<Registerpage> {
   TextEditingController doctorPhone = TextEditingController();
   TextEditingController doctorPassword = TextEditingController();
 
-  Future<String> authenticateDoctor(String doctorname, String doctoremail,
-      String doctorkvsc, String doctorphone, String doctorpassword) async {
+  Future<String> authenticateDoctor(
+      String doctorname,
+      String doctoremail,
+      String doctorkvsc,
+      String doctorphone,
+      String doctorpassword,
+      Database DB) async {
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -76,10 +81,10 @@ class _RegisterpageState extends State<Registerpage> {
           'email': doctoremail,
           'role': "doctor"
         });
-        widget.db.updateDatabase("userEmail", doctoremail);
-        widget.db.updateDatabase("password", doctorpassword);
-        widget.db.updateDatabase("role", "doctor");
-        widget.db.updateDatabase("userName", doctorname);
+        DB.updateDatabase("userEmail", doctoremail);
+        DB.updateDatabase("password", doctorpassword);
+        DB.updateDatabase("role", "doctor");
+        DB.updateDatabase("userName", doctorname);
         return (user.uid);
       } else {
         return ("failure");
@@ -96,7 +101,7 @@ class _RegisterpageState extends State<Registerpage> {
   }
 
   Future<String> authenticateUser(String username, String useremail,
-      String userphone, String password) async {
+      String userphone, String password, Database DB) async {
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: useremail, password: password);
@@ -119,11 +124,11 @@ class _RegisterpageState extends State<Registerpage> {
           'email': useremail,
           'role': "customer"
         });
-        widget.db.switchValue = false;
-        widget.db.updateDatabase("userEmail", useremail);
-        widget.db.updateDatabase("password", userPassword);
-        widget.db.updateDatabase("role", "user");
-        widget.db.updateDatabase("userName", username);
+        DB.switchValue = false;
+        DB.updateDatabase("userEmail", useremail);
+        DB.updateDatabase("password", userPassword);
+        DB.updateDatabase("role", "user");
+        DB.updateDatabase("userName", username);
         return (user.uid);
       } else {
         return ("failure");
@@ -141,6 +146,7 @@ class _RegisterpageState extends State<Registerpage> {
 
   @override
   Widget build(BuildContext context) {
+    final db = Provider.of<Database>(context);
     bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
     return Scaffold(
       body: Stack(
@@ -301,7 +307,8 @@ class _RegisterpageState extends State<Registerpage> {
                               doctorEmail.text,
                               doctorkvsc.text,
                               doctorPhone.text,
-                              doctorPassword.text);
+                              doctorPassword.text,
+                              db);
                           var result = await futresult;
                           if (result != "failure") {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -325,7 +332,6 @@ class _RegisterpageState extends State<Registerpage> {
                               MaterialPageRoute(
                                 builder: (context) => PageNav(
                                   CurrentPageIndex: 1,
-                                  db: widget.db,
                                   SwitchValue: switchValue,
                                   CurrentUserId:
                                       FirebaseAuth.instance.currentUser!.uid,
@@ -365,7 +371,8 @@ class _RegisterpageState extends State<Registerpage> {
                               userName.text,
                               userEmail.text,
                               userPhone.text,
-                              userPassword.text);
+                              userPassword.text,
+                              db);
                           var result = await futuserresult;
 
                           if (result != "failure") {
@@ -378,7 +385,6 @@ class _RegisterpageState extends State<Registerpage> {
                               MaterialPageRoute(
                                 builder: (context) => PageNav(
                                   CurrentPageIndex: 1,
-                                  db: widget.db,
                                   SwitchValue: switchValue,
                                   CurrentUserId:
                                       FirebaseAuth.instance.currentUser!.uid,

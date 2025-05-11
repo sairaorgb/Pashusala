@@ -133,6 +133,7 @@ class _HomePageState extends State<HomePage> {
         context.read<HomepetsProvider>().savedAddress[newLabel]!['address']!;
 
     await context.read<HomepetsProvider>().setUsedAddress();
+    setState(() {});
   }
 
   Future<void> fetchLocation() async {
@@ -443,8 +444,7 @@ class _HomePageState extends State<HomePage> {
             stream: FirebaseFirestore.instance
                 .collection('doctors_data')
                 .doc(widget.currentUserId)
-                .collection('requests')
-                .where('status', isEqualTo: 'pending')
+                .collection('pending_requests')
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -474,9 +474,11 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: requests.length,
                 itemBuilder: (context, index) {
-                  final request = requests[index].data() as Map<String, dynamic>;
+                  final request =
+                      requests[index].data() as Map<String, dynamic>;
                   final requestId = requests[index].id;
-                  final typeOfRequest = request['typeOfRequest'] ?? 'appointment';
+                  final typeOfRequest =
+                      request['typeOfRequest'] ?? 'appointment';
                   final petName = request['petName'] ?? '';
                   final userName = request['userName'] ?? '';
                   final breed = request['breed'] ?? '';
@@ -572,12 +574,15 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                      if (typeOfRequest == 'pet_verification' && address != null)
+                                      if (typeOfRequest == 'pet_verification' &&
+                                          address != null)
                                         Text('Address: $address'),
-                                      if (typeOfRequest == 'appointment' && time != null)
+                                      if (typeOfRequest == 'appointment' &&
+                                          time != null)
                                         Text('Slot: $time'),
                                       if (date != null)
-                                        Text('Date: ${DateFormat('MMM dd, yyyy').format(date)}'),
+                                        Text(
+                                            'Date: ${DateFormat('MMM dd, yyyy').format(date)}'),
                                     ],
                                   ),
                                 ),
@@ -717,22 +722,126 @@ class _HomePageState extends State<HomePage> {
   Future<void> _handleBookingRequest(String requestId, String status,
       {DateTime? date, String? time}) async {
     try {
-      await FirebaseFirestore.instance
+      // Get the request data first
+      final requestDoc = await FirebaseFirestore.instance
           .collection('doctors_data')
           .doc(widget.currentUserId)
-          .collection('requests')
-          .doc(requestId)
-          .update({'status': status});
+          .collection('pending_requests')
+          .doc(requestId);
 
-      if (status == 'accepted' && date != null && time != null) {
+      final requestData = await requestDoc.get();
+      if (!requestData.exists) {
+        throw Exception('Request not found');
+      }
+
+      final request = requestData.data() as Map<String, dynamic>;
+
+      if (status == 'accepted') {
+        // Move to completed_requests
         await FirebaseFirestore.instance
             .collection('doctors_data')
             .doc(widget.currentUserId)
-            .collection('timeSlots')
-            .doc(DateFormat('yyyy-MM-dd').format(date))
+            .collection('completed_requests')
+            .doc(requestId)
             .set({
-          time: false,
+          ...request,
+          'status': 'accepted',
+          'acceptedAt': DateTime.now(),
+        });
+
+        // If it's an appointment, update the time slot
+        if (request['typeOfRequest'] == 'appointment' &&
+            date != null &&
+            time != null) {
+          await FirebaseFirestore.instance
+              .collection('doctors_data')
+              .doc(widget.currentUserId)
+              .collection('timeSlots')
+              .doc(DateFormat('yyyy-MM-dd').format(date))
+              .set({
+            time: false,
+          }, SetOptions(merge: true));
+        }
+
+        // Create chat room ID
+        List<String> ids = [widget.currentUserId, request['userId']];
+        ids.sort();
+        String chatRoomId = ids.join('_');
+        // Create the acceptance message
+        final messageData = {
+          'message': '''
+Appointment Request ${status.toUpperCase()}
+🕒 Date & Time: ${DateFormat('MMM dd, yyyy').format(date!)} at $time
+🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
+👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+📋 Status: Accepted ✅
+''',
+          'receiverID': request['userId'],
+          'senderEmail': context.read<Database>().userEmail,
+          'senderID': widget.currentUserId,
+          'timestamp': FieldValue.serverTimestamp(),
+        };
+
+        // Add message to chat room
+        await FirebaseFirestore.instance
+            .collection('chat_rooms')
+            .doc(chatRoomId)
+            .collection('messages')
+            .add(messageData);
+
+        // Update chat room metadata
+        await FirebaseFirestore.instance
+            .collection('chat_rooms')
+            .doc(chatRoomId)
+            .set({
+          'participants': [request['userId'], widget.currentUserId],
+          'lastMessage': messageData['message'],
+          'lastMessageTime': FieldValue.serverTimestamp(),
+          'lastMessageSender': widget.currentUserId,
         }, SetOptions(merge: true));
+
+        // Delete from pending_requests
+        await requestDoc.delete();
+      } else if (status == 'rejected') {
+        // Create chat room ID
+        List<String> ids = [widget.currentUserId, request['userId']];
+        ids.sort();
+        String chatRoomId = ids.join('_');
+        // Create the rejection message
+        final messageData = {
+          'message': '''
+Appointment Request ${status.toUpperCase()}
+🕒 Date & Time: ${DateFormat('MMM dd, yyyy').format((request['date'] as Timestamp).toDate())} at ${request['time']}
+🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
+👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+📋 Status: Declined ❌
+''',
+          'receiverID': request['userId'],
+          'senderEmail': context.read<Database>().userEmail,
+          'senderID': widget.currentUserId,
+          'timestamp': FieldValue.serverTimestamp(),
+        };
+
+        // Add message to chat room
+        await FirebaseFirestore.instance
+            .collection('chat_rooms')
+            .doc(chatRoomId)
+            .collection('messages')
+            .add(messageData);
+
+        // Update chat room metadata
+        await FirebaseFirestore.instance
+            .collection('chat_rooms')
+            .doc(chatRoomId)
+            .set({
+          'participants': [request['userId'], widget.currentUserId],
+          'lastMessage': messageData['message'],
+          'lastMessageTime': FieldValue.serverTimestamp(),
+          'lastMessageSender': widget.currentUserId,
+        }, SetOptions(merge: true));
+
+        // Delete from pending_requests
+        await requestDoc.delete();
       }
 
       if (context.mounted) {
@@ -985,6 +1094,7 @@ class AddressBottomSheet {
                         ),
                         onPressed: () {
                           ontap(indexToMark);
+
                           Navigator.pop(context);
                         },
                         child: Text(

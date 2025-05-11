@@ -10,7 +10,6 @@ import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/clinicLocationProvider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/homePetsProvider.dart';
-import 'package:veterinary_app/pages/homepage.dart';
 import 'package:veterinary_app/pages/loginPage.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
@@ -60,30 +59,20 @@ class myApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: (authResponse == "success")
           ? PageNav(
-              db: db,
               CurrentPageIndex: 1,
               CurrentUserId: db.user!.uid,
               SwitchValue: db.switchValue)
-          : WelcomePage(db: db),
+          : WelcomePage(),
       routes: {
         '/loginpage': (context) => Loginpage(
               switchbool: false,
-              db: db,
             ),
         '/pagenavpage': (context) => PageNav(
               CurrentPageIndex: 1,
               CurrentUserId: "",
               SwitchValue: false,
-              db: db,
             ),
-        '/registerpage': (context) => Registerpage(
-              db: Database(),
-            ),
-        '/homepage': (context) => HomePage(
-              switchValue: '',
-              currentUserId: '',
-              db: db,
-            )
+        '/registerpage': (context) => Registerpage(),
       },
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),

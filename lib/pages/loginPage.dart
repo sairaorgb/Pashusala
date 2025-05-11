@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
@@ -9,8 +10,7 @@ import 'package:veterinary_app/utils/usertextfield.dart';
 
 class Loginpage extends StatefulWidget {
   bool switchbool;
-  Database db;
-  Loginpage({super.key, required this.switchbool, required this.db});
+  Loginpage({super.key, required this.switchbool});
   @override
   State<Loginpage> createState() => _LoginpageState();
 }
@@ -27,6 +27,7 @@ class _LoginpageState extends State<Loginpage> {
 
   @override
   Widget build(BuildContext context) {
+    final db = Provider.of<Database>(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -145,7 +146,7 @@ class _LoginpageState extends State<Loginpage> {
                             ),
                           );
                         } else {
-                          var result = await widget.db.authenticate(
+                          var result = await db.authenticate(
                               "doctor", userName.text, password.text);
                           if (result == 'success') {
                             currentUserId =
@@ -157,7 +158,6 @@ class _LoginpageState extends State<Loginpage> {
                               MaterialPageRoute(
                                 builder: (context) => PageNav(
                                   CurrentPageIndex: 1,
-                                  db: widget.db,
                                   SwitchValue: _switchValue,
                                   CurrentUserId: currentUserId,
                                 ),
@@ -189,7 +189,7 @@ class _LoginpageState extends State<Loginpage> {
                             ),
                           );
                         } else {
-                          var result = await widget.db.authenticate(
+                          var result = await db.authenticate(
                               "user", userName.text, password.text);
                           if (result == 'success') {
                             currentUserId =
@@ -201,7 +201,6 @@ class _LoginpageState extends State<Loginpage> {
                               MaterialPageRoute(
                                 builder: (context) => PageNav(
                                   CurrentPageIndex: 1,
-                                  db: widget.db,
                                   SwitchValue: _switchValue,
                                   CurrentUserId: currentUserId,
                                 ),
@@ -251,9 +250,7 @@ class _LoginpageState extends State<Loginpage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Registerpage(
-                          db: widget.db,
-                        ),
+                        builder: (context) => Registerpage(),
                       ),
                     ),
                     child: Row(

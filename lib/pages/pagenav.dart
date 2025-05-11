@@ -16,7 +16,6 @@ import 'package:veterinary_app/pages/storePage.dart';
 import 'package:veterinary_app/utils/chatText.dart';
 
 class PageNav extends StatefulWidget {
-  Database db;
   int CurrentPageIndex;
   String CurrentUserId;
   bool SwitchValue;
@@ -24,8 +23,7 @@ class PageNav extends StatefulWidget {
       {super.key,
       required this.CurrentPageIndex,
       required this.CurrentUserId,
-      required this.SwitchValue,
-      required this.db});
+      required this.SwitchValue});
 
   @override
   State<PageNav> createState() => _PageNavState();
@@ -51,10 +49,10 @@ class _PageNavState extends State<PageNav> {
     switchValue = widget.SwitchValue;
   }
 
-  void logout(BuildContext context) async {
+  void logout(BuildContext context, Database DB) async {
     var authinstance = FirebaseAuth.instance;
     try {
-      widget.db.logOutUser();
+      DB.logOutUser();
       Provider.of<HomepetsProvider>(context, listen: false).logout();
       Provider.of<CartStoreProvider>(context, listen: false).logout();
       await authinstance.signOut();
@@ -63,7 +61,6 @@ class _PageNavState extends State<PageNav> {
         MaterialPageRoute(
           builder: (context) => Loginpage(
             switchbool: widget.SwitchValue,
-            db: widget.db,
           ),
         ),
         (Route<dynamic> route) => false,
@@ -86,12 +83,14 @@ class _PageNavState extends State<PageNav> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> pages = (widget.db.switchValue)
+    final db = Provider.of<Database>(context);
+
+    List<Widget> pages = (db.switchValue)
         ? [
             HomePage(
+              db: db,
               switchValue: switchValue.toString(),
               currentUserId: currentUserId,
-              db: widget.db,
             ),
             chatModule(
               currentUserId: currentUserId,
@@ -104,9 +103,9 @@ class _PageNavState extends State<PageNav> {
               switchValue: switchValue.toString(),
             ),
             HomePage(
+              db: db,
               switchValue: switchValue.toString(),
               currentUserId: currentUserId,
-              db: widget.db,
             ),
             CartPage(
               UserId: currentUserId,
@@ -176,7 +175,7 @@ class _PageNavState extends State<PageNav> {
                   ),
                   child: Center(child: Image.asset('assets/images/logo.png')),
                 ),
-                if (!widget.db.switchValue) ...[
+                if (!db.switchValue) ...[
                   Padding(
                     padding: const EdgeInsets.only(left: 25.0),
                     child: ListTile(
@@ -196,7 +195,6 @@ class _PageNavState extends State<PageNav> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PageNav(
-                              db: widget.db,
                               CurrentPageIndex: 1,
                               CurrentUserId: currentUserId,
                               SwitchValue: switchValue,
@@ -225,7 +223,6 @@ class _PageNavState extends State<PageNav> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PageNav(
-                              db: widget.db,
                               CurrentPageIndex: 0,
                               CurrentUserId: currentUserId,
                               SwitchValue: switchValue,
@@ -254,7 +251,6 @@ class _PageNavState extends State<PageNav> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => PageNav(
-                              db: widget.db,
                               CurrentPageIndex: 2,
                               CurrentUserId: currentUserId,
                               SwitchValue: switchValue,
@@ -292,8 +288,7 @@ class _PageNavState extends State<PageNav> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PageNav(
-                            db: widget.db,
-                            CurrentPageIndex: widget.db.switchValue ? 1 : 3,
+                            CurrentPageIndex: db.switchValue ? 1 : 3,
                             CurrentUserId: currentUserId,
                             SwitchValue: switchValue,
                           ),
@@ -325,7 +320,7 @@ class _PageNavState extends State<PageNav> {
                       : Color.fromRGBO(
                           16, 42, 66, 1), // Dark blue for user's icon
                 ),
-                onTap: () => logout(context),
+                onTap: () => logout(context, db),
               ),
             ),
           ],
@@ -347,7 +342,7 @@ class _PageNavState extends State<PageNav> {
         tabBorderRadius: 16,
         onTabChange: (index) => onTabchange(index),
         selectedIndex: currentPageIndex,
-        tabs: widget.db.switchValue
+        tabs: db.switchValue
             ? [
                 GButton(
                   icon: Icons.home,

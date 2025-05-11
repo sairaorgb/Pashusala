@@ -51,7 +51,9 @@ class Database with ChangeNotifier {
             .get();
 
         userName = (docSnapshot.data()?['doctorName'] as String?) ?? '';
-        updateDatabase("userEmail", useremail);
+        userEmail = useremail;
+        role = role;
+        updateDatabase("userEmail", userEmail);
         updateDatabase("password", password);
         updateDatabase("role", "doctor");
         updateDatabase("userName", userName);
@@ -62,7 +64,9 @@ class Database with ChangeNotifier {
             .get();
         switchValue = false;
         userName = (docSnapshot.data()?['userName'] as String?) ?? '';
-        updateDatabase("userEmail", useremail);
+        userEmail = useremail;
+        role = role;
+        updateDatabase("userEmail", userEmail);
         updateDatabase("password", password);
         updateDatabase("role", "user");
         updateDatabase("userName", userName);

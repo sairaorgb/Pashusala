@@ -152,12 +152,14 @@ class _ChatPageState extends State<ChatPage> {
           actions: widget.recieverRole == "doctor"
               ? [
                   IconButton(
-                    icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.tertiary),
+                    icon: Icon(Icons.more_vert,
+                        color: Theme.of(context).colorScheme.tertiary),
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (context) {
                           return Column(
@@ -258,25 +260,35 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageList() {
-    String senderId = FirebaseAuth.instance.currentUser!.uid;
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    List<String> ids = [currentUserId, widget.receiverID];
+    ids.sort();
+    String chatRoomId = ids.join('_');
 
-    return StreamBuilder(
-      stream: _chatService.getMessages(widget.receiverID, senderId),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Text("error");
+          return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("loading...");
+          return const Center(child: CircularProgressIndicator());
         }
 
-        return ListView(
-          padding: const EdgeInsets.only(bottom: 0.0),
-          controller: _scrollController,
-          children: snapshot.data!.docs
-              .map((doc) => _buildMessageItem(context, doc))
-              .toList(),
+        final messages = snapshot.data?.docs ?? [];
+
+        return ListView.builder(
+          reverse: true,
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            return _buildMessageItem(context, messages[index]);
+          },
         );
       },
     );
@@ -455,7 +467,8 @@ class _PetVerificationDialogState extends State<PetVerificationDialog> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
               ),
               onPressed: (selectedPet != null &&
                       selectedAddressLabel != null &&

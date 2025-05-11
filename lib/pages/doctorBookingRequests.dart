@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';
 
 class DoctorBookingRequests extends StatelessWidget {
@@ -13,47 +15,126 @@ class DoctorBookingRequests extends StatelessWidget {
   }) : super(key: key);
 
   Future<void> _handleBookingRequest(
-    BuildContext context,
-    String requestId,
-    String status,
-  ) async {
+      BuildContext context, String requestId, String status,
+      {DateTime? date, String? time}) async {
     try {
-      // Update the request status
-      await FirebaseFirestore.instance
+      // Get the request data first
+      final requestDoc = await FirebaseFirestore.instance
           .collection('doctors_data')
           .doc(doctorId)
-          .collection('requests')
-          .doc(requestId)
-          .update({'status': status});
+          .collection('pending_requests')
+          .doc(requestId);
 
-      // If accepted, update the time slot availability
+      final requestData = await requestDoc.get();
+      if (!requestData.exists) {
+        throw Exception('Request not found');
+      }
+
+      final request = requestData.data() as Map<String, dynamic>;
+      final typeOfRequest = request['typeOfRequest'] ?? 'appointment';
+
+      // Prepare chat room ID
+      List<String> ids = [request['userId'], doctorId];
+      ids.sort();
+      String chatRoomId = ids.join('_');
+
+      final doctorEmail = context.read<Database>().userEmail;
+
+      // Format the timestamp as a string
+      final now = DateTime.now();
+      final formattedTimestamp =
+          DateFormat("d MMMM y 'at' HH:mm:ss 'UTC'Z").format(now);
+
+      // Prepare the message text
+      final messageText = typeOfRequest == 'pet_verification'
+          ? '''
+Pet Verification Request ${status.toUpperCase()}
+🕒 Date: ${DateFormat('MMM dd, yyyy').format((request['date'] as Timestamp).toDate())}
+🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
+📍 Address: ${request['address']}
+👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+📋 Status: ${status == 'accepted' ? 'Accepted ✅' : 'Declined ❌'}
+'''
+          : '''
+Appointment Request ${status.toUpperCase()}
+🕒 Date & Time: ${DateFormat('MMM dd, yyyy').format(date ?? (request['date'] as Timestamp).toDate())} at ${time ?? request['time']}
+🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
+👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+📋 Status: ${status == 'accepted' ? 'Accepted ✅' : 'Declined ❌'}
+''';
+
+      // Prepare the message data
+      final messageData = {
+        'message': messageText,
+        'receiverID': request['userId'],
+        'senderEmail': doctorEmail,
+        'senderID': doctorId,
+        'timestamp': formattedTimestamp,
+      };
+
+      // Add message to chat room
+      await FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .add(messageData);
+
+      // Update chat room metadata
+      await FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .set({
+        'participants': [request['userId'], doctorId],
+        'lastMessage': messageText,
+        'lastMessageTime': formattedTimestamp,
+        'lastMessageSender': doctorId,
+      }, SetOptions(merge: true));
+
+      // Move to completed_requests or delete from pending_requests
       if (status == 'accepted') {
-        final requestDoc = await FirebaseFirestore.instance
-            .collection('doctors_data')
-            .doc(doctorId)
-            .collection('requests')
-            .doc(requestId)
-            .get();
-
-        final data = requestDoc.data() as Map<String, dynamic>;
-        final date = (data['date'] as Timestamp).toDate();
-        final time = data['time'] as String;
-
-        // Update the time slot in the doctor's time slots
+        // Move to completed_requests with only required fields
         await FirebaseFirestore.instance
             .collection('doctors_data')
             .doc(doctorId)
-            .collection('timeSlots')
-            .doc(DateFormat('yyyy-MM-dd').format(date))
+            .collection('completed_requests')
+            .doc(requestId)
             .set({
-          time: false,
-        }, SetOptions(merge: true));
+          'petId': request['petId'],
+          'petName': request['petName'],
+          'date': request['date'],
+          'time': request['time'],
+          'userId': request['userId'],
+          'userName': request['userName'],
+          'animalType': request['animalType'],
+          'breed': request['breed'],
+          'typeOfRequest': request['typeOfRequest'],
+          'address': request['address'],
+          'status': 'accepted',
+          'acceptedAt': now,
+          'createdAt': request['createdAt'],
+        });
+
+        // If it's an appointment, update the time slot
+        if (typeOfRequest == 'appointment' && date != null && time != null) {
+          await FirebaseFirestore.instance
+              .collection('doctors_data')
+              .doc(doctorId)
+              .collection('timeSlots')
+              .doc(DateFormat('yyyy-MM-dd').format(date))
+              .set({
+            time: false,
+          }, SetOptions(merge: true));
+        }
       }
+
+      // Delete from pending_requests
+      await requestDoc.delete();
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Booking request $status successfully'),
+            content: Text(
+                '${typeOfRequest == 'pet_verification' ? 'Pet verification' : 'Booking'} request $status successfully'),
             backgroundColor: status == 'accepted' ? Colors.green : Colors.red,
           ),
         );
@@ -86,8 +167,7 @@ class DoctorBookingRequests extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('doctors_data')
             .doc(doctorId)
-            .collection('requests')
-            .where('status', isEqualTo: 'pending')
+            .collection('pending_requests')
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -185,6 +265,8 @@ class DoctorBookingRequests extends StatelessWidget {
                               context,
                               requestId,
                               'rejected',
+                              date: date,
+                              time: time,
                             ),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.red,
@@ -197,6 +279,8 @@ class DoctorBookingRequests extends StatelessWidget {
                               context,
                               requestId,
                               'accepted',
+                              date: date,
+                              time: time,
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF9CAF88),

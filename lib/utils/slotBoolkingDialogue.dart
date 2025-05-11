@@ -84,13 +84,13 @@ class _BookingDialogState extends State<BookingDialog> {
     }
 
     try {
-      // Get the current user's ID
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception('User not logged in');
       }
 
-      // Create the booking request data
+      final userEmail = user.email ?? 'system';
+
       final bookingData = {
         'petId': selectedPet!['petId'],
         'petName': selectedPet!['name'],
@@ -98,21 +98,58 @@ class _BookingDialogState extends State<BookingDialog> {
         'time': selectedTime,
         'userId': user.uid,
         'userName': context.read<Database>().userName ?? 'Unknown User',
-        'status': 'pending', // pending, accepted, rejected
+        'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
         'animalType': selectedPet!["animalType"] ?? "Unknown",
         'breed': selectedPet!["breed"] ?? "Unknown",
         'typeOfRequest': 'appointment',
       };
 
-      // Add the booking request to the doctor's requests collection
+      // Add to pending_requests
       await FirebaseFirestore.instance
           .collection('doctors_data')
           .doc(widget.doctorId)
-          .collection('requests')
+          .collection('pending_requests')
           .add(bookingData);
 
-      // Show success message
+      // Create chat room ID (combination of user and doctor IDs)
+      List<String> ids = [user.uid, widget.doctorId];
+      ids.sort();
+      String chatRoomId = ids.join('_');
+
+      // Create the message for the chat
+      final messageData = {
+        'message': '''
+New Appointment Request
+🕒 Date & Time: ${DateFormat('MMM dd, yyyy').format(selectedDate)} at $selectedTime
+🐾 Pet: ${selectedPet!['name']} (${selectedPet!['animalType']}, ${selectedPet!['breed']})
+👤 From: ${context.read<Database>().userName ?? 'Unknown User'}
+📋 Status: Pending
+''',
+        'receiverID': widget.doctorId,
+        'senderEmail': userEmail,
+        'senderID': user.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+
+      // Add message to chat room
+      await FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .collection('messages')
+          .add(messageData);
+
+      // Create or update chat room metadata
+      await FirebaseFirestore.instance
+          .collection('chat_rooms')
+          .doc(chatRoomId)
+          .set({
+        'participants': [user.uid, widget.doctorId],
+        'lastMessage': messageData['message'],
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'lastMessageSender': widget.doctorId,
+      }, SetOptions(merge: true));
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -120,7 +157,7 @@ class _BookingDialogState extends State<BookingDialog> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(); // Close the dialog
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
