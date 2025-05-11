@@ -246,6 +246,11 @@ class _MappageState extends State<Mappage> {
           }.toSet(),
         ),
       ]),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _goToCloseUp,
+        label: const Text('Closer Look!'),
+        icon: const Icon(Icons.zoom_in_map),
+      ),
     );
   }
 }

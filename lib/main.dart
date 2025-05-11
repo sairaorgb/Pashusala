@@ -15,6 +15,7 @@ import 'package:veterinary_app/pages/pagenav.dart';
 import 'package:veterinary_app/pages/registerPage.dart';
 import 'package:flutter/services.dart';
 import 'package:veterinary_app/pages/welcomepage.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,8 +32,6 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('myBox');
-  Database db = Database();
-  var authResponse = await db.validateUser();
 
   runApp(MultiProvider(
     providers: [
@@ -41,28 +40,45 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (_) => CartStoreProvider()),
       ChangeNotifierProvider(create: (_) => Cliniclocationprovider())
     ],
-    child: myApp(
-      db: db,
-      authResponse: authResponse,
-    ),
+    child: myApp(),
   ));
 }
 
-class myApp extends StatelessWidget {
-  Database db;
-  String authResponse;
-  myApp({super.key, required this.authResponse, required this.db});
+class myApp extends StatefulWidget {
+  myApp({super.key});
+
+  @override
+  State<myApp> createState() => _myAppState();
+}
+
+class _myAppState extends State<myApp> {
+  String authResponse = '';
+  late Database db;
+
+  Future<void> validatingUser(Database DB) async {
+    authResponse = await DB.validateUser();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    db = Provider.of<Database>(context, listen: false);
+    validatingUser(db);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: (authResponse == "success")
-          ? PageNav(
-              CurrentPageIndex: 1,
-              CurrentUserId: db.user!.uid,
-              SwitchValue: db.switchValue)
-          : WelcomePage(),
+      home: (authResponse.isEmpty)
+          ? const _CacheLoadingScreen()
+          : (authResponse == "success")
+              ? PageNav(
+                  CurrentPageIndex: 1,
+                  CurrentUserId: db.user!.uid,
+                  SwitchValue: db.switchValue)
+              : WelcomePage(),
       routes: {
         '/loginpage': (context) => Loginpage(
               switchbool: false,
@@ -72,11 +88,71 @@ class myApp extends StatelessWidget {
               CurrentUserId: "",
               SwitchValue: false,
             ),
-        '/registerpage': (context) => Registerpage(),
       },
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.light,
+    );
+  }
+}
+
+class _CacheLoadingScreen extends StatefulWidget {
+  const _CacheLoadingScreen({Key? key}) : super(key: key);
+
+  @override
+  State<_CacheLoadingScreen> createState() => _CacheLoadingScreenState();
+}
+
+class _CacheLoadingScreenState extends State<_CacheLoadingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _fadeAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SpinKitFadingCube(
+              color: Colors.amberAccent,
+              size: 70.0,
+            ),
+            const SizedBox(height: 40),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Text(
+                'Please wait while we retrieve your data...',
+                style: TextStyle(
+                  color: Colors.amberAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

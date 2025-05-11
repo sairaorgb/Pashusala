@@ -52,14 +52,14 @@ Pet Verification Request ${status.toUpperCase()}
 🕒 Date: ${DateFormat('MMM dd, yyyy').format((request['date'] as Timestamp).toDate())}
 🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
 📍 Address: ${request['address']}
-👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+👤 Doctor: ${context.read<Database>().userName}
 📋 Status: ${status == 'accepted' ? 'Accepted ✅' : 'Declined ❌'}
 '''
           : '''
 Appointment Request ${status.toUpperCase()}
 🕒 Date & Time: ${DateFormat('MMM dd, yyyy').format(date ?? (request['date'] as Timestamp).toDate())} at ${time ?? request['time']}
 🐾 Pet: ${request['petName']} (${request['animalType']}, ${request['breed']})
-👤 Doctor: ${context.read<Database>().userName ?? 'Unknown Doctor'}
+👤 Doctor: ${context.read<Database>().userName}
 📋 Status: ${status == 'accepted' ? 'Accepted ✅' : 'Declined ❌'}
 ''';
 

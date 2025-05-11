@@ -9,7 +9,8 @@ import 'package:veterinary_app/utils/usertextfield.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Registerpage extends StatefulWidget {
-  Registerpage({super.key});
+  bool switchValue;
+  Registerpage({super.key, required this.switchValue});
 
   @override
   State<Registerpage> createState() => _RegisterpageState();
@@ -147,7 +148,7 @@ class _RegisterpageState extends State<Registerpage> {
   @override
   Widget build(BuildContext context) {
     final db = Provider.of<Database>(context);
-    bool switchValue = ModalRoute.of(context)?.settings.arguments as bool;
+    final switchValue = widget.switchValue;
     return Scaffold(
       body: Stack(
         children: [

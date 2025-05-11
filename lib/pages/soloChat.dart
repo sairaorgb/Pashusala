@@ -510,7 +510,7 @@ class _PetVerificationDialogState extends State<PetVerificationDialog> {
       await FirebaseFirestore.instance
           .collection('doctors_data')
           .doc(widget.doctorId)
-          .collection('requests')
+          .collection('pending_requests')
           .add(requestData);
 
       if (mounted) {

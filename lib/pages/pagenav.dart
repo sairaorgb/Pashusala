@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:veterinary_app/cartStoreProvider.dart';
 import 'package:veterinary_app/database.dart';
 import 'package:veterinary_app/homePetsProvider.dart';
+import 'package:veterinary_app/main.dart';
 import 'package:veterinary_app/pages/cartPage.dart';
 import 'package:veterinary_app/pages/chatPage.dart';
 import 'package:veterinary_app/pages/homepage.dart';
@@ -52,17 +53,13 @@ class _PageNavState extends State<PageNav> {
   void logout(BuildContext context, Database DB) async {
     var authinstance = FirebaseAuth.instance;
     try {
-      DB.logOutUser();
+      await DB.logOutUser();
       Provider.of<HomepetsProvider>(context, listen: false).logout();
       Provider.of<CartStoreProvider>(context, listen: false).logout();
       await authinstance.signOut();
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => Loginpage(
-            switchbool: widget.SwitchValue,
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => myApp()),
         (Route<dynamic> route) => false,
       );
     } catch (e) {

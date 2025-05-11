@@ -27,7 +27,8 @@ class HomepetsProvider extends ChangeNotifier {
   List<Map<String, dynamic>> petList = [];
   Map<String, Map<String, dynamic>> savedAddress = {};
 
-  void logout() {
+  void logout() async {
+    _timer.cancel();
     user = null;
     fbStoreInstance = null;
     petList = [];

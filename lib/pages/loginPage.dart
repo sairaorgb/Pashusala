@@ -250,7 +250,9 @@ class _LoginpageState extends State<Loginpage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Registerpage(),
+                        builder: (context) => Registerpage(
+                          switchValue: _switchValue,
+                        ),
                       ),
                     ),
                     child: Row(

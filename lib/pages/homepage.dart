@@ -11,7 +11,6 @@ import 'package:veterinary_app/homePetsProvider.dart';
 import 'package:veterinary_app/pages/mapPage.dart';
 import 'package:veterinary_app/utils/addPetDialogue.dart';
 import 'package:veterinary_app/utils/homePetTile.dart';
-import 'package:veterinary_app/pages/doctorBookingRequests.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:veterinary_app/utils/imageProvider.dart';

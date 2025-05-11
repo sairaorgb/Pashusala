@@ -7,17 +7,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:veterinary_app/database.dart';
 
 import 'package:veterinary_app/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(myApp(
-      authResponse: '',
-      db: Database(),
-    ));
+    await tester.pumpWidget(myApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
